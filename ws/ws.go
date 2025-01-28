@@ -69,6 +69,8 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		// }
 
 		fmt.Println(string(msg))
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(200)
 
 	}
 }
@@ -128,5 +130,5 @@ func SendMessage(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	fmt.Println("sender",username,string(resp))
+	fmt.Println("sender", username, string(resp))
 }

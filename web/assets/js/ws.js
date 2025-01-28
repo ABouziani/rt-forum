@@ -72,8 +72,10 @@ function getChatBox(uname) {
 }
 
 
-function sendMessage(uname){
+function sendMessage(uname) {
     let message = document.querySelector('#chatInput').value
+    const chatInput = document.getElementById("chatInput");
+    const chatMessages = document.getElementById("chatMessages");
     fetch("/sendmessage", {
         method: "POST",
         header: {
@@ -81,7 +83,16 @@ function sendMessage(uname){
         },
         body: JSON.stringify({
             receiver: uname,
-            msg:message,
+            msg: message,
         }),
+    }).then(data => {
+        if (data.ok) {
+            const messageElement = document.createElement("div");
+            messageElement.className = "message sent";
+            messageElement.textContent = message;
+            chatMessages.appendChild(messageElement);
+            chatInput.value = "";
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
     })
 }
