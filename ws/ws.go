@@ -4,24 +4,26 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"sync"
 
 	"forum/server/models"
-	"forum/server/utils"
 
 	"github.com/gorilla/websocket"
 )
 
 type Message struct {
-	Sender   *websocket.Conn
-	Receiver *websocket.Conn
-	Msg      string
+	Sender   string
+	Receiver string `json:"receiver"`
+	Msg      string `json:"msg"`
 }
 
 type OnlineUsers struct {
 	Online []string
+}
+
+type FetchStruct struct {
+	Receiver string
 }
 
 var (
@@ -61,16 +63,29 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			getOnlines()
 			break
 		}
-		// var receivedMsg map[string]interface{}
-		// err = json.Unmarshal(msg, &receivedMsg)
+
+		var receivedMsg Message
+		err = json.Unmarshal(msg, &receivedMsg)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		receivedMsg.Sender = username
+
+		err = StoreMsg(db, receivedMsg.Sender, receivedMsg.Receiver, receivedMsg.Msg)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		// data, err := json.Marshal(receivedMsg)
 		// if err != nil {
-		// 	fmt.Println(err)
+		// 	fmt.Println("Error serializing JSON:", err)
 		// 	return
 		// }
 
-		fmt.Println(string(msg))
-		w.Header().Set("Content-Type", "text/html")
-		w.WriteHeader(200)
+		SendMessage(receivedMsg.Sender, receivedMsg.Receiver, receivedMsg)
 
 	}
 }
@@ -109,26 +124,87 @@ func getOnlines() {
 	OnlineCh <- OnlineUsers{Online: onlines}
 }
 
-func SendMessage(w http.ResponseWriter, r *http.Request, db *sql.DB) {
-	_, username, valid := models.ValidSession(r, db)
-	if r.Method != http.MethodPost {
-		utils.RenderError(db, w, r, http.StatusMethodNotAllowed, valid, username)
+func SendMessage(sender, receiver string, data Message) {
+	_, exist := Clients[sender]
+	_, exist2 := Clients[receiver]
+
+	if !exist || !exist2 {
+		fmt.Println("error")
+		fmt.Println(Clients)
 		return
 	}
+
+	Clients[sender].WriteJSON(data)
+	Clients[receiver].WriteJSON(data)
+	// fmt.Println(string(data))
+	// 	_, username, valid := models.ValidSession(r, db)
+	// 	if r.Method != http.MethodPost {
+	// 		utils.RenderError(db, w, r, http.StatusMethodNotAllowed, valid, username)
+	// 		return
+	// 	}
+	// 	if !valid {
+	// 		w.WriteHeader(401)
+	// 		return
+	// 	}
+	// 	if err := r.ParseForm(); err != nil {
+	// 		w.WriteHeader(400)
+	// 		return
+	// 	}
+
+	// 	resp, err := io.ReadAll(r.Body)
+	// 	if err != nil {
+	// 		fmt.Println("error reading requets body")
+	// 		return
+	// 	}
+
+	// fmt.Println(receivedMsg)
+}
+
+func StoreMsg(db *sql.DB, sender, receiver, msg string) error {
+	query := `INSERT INTO messages (sender,receiver,msg) VALUES (?,?,?)`
+
+	_, err := db.Exec(query, sender, receiver, msg)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func FetchMessages(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	_, sender, valid := models.ValidSession(r, db)
+
 	if !valid {
 		w.WriteHeader(401)
 		return
 	}
-	if err := r.ParseForm(); err != nil {
-		w.WriteHeader(400)
+
+	var rdata FetchStruct
+	if err := json.NewDecoder(r.Body).Decode(&rdata); err != nil {
+		fmt.Println(err)
 		return
 	}
 
-	resp, err := io.ReadAll(r.Body)
+	msghistory, err := fetchdbMessages(db, sender, rdata.Receiver)
 	if err != nil {
-		fmt.Println("error reading requets body")
+		fmt.Println(err)
 		return
 	}
 
-	fmt.Println("sender", username, string(resp))
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Println(msghistory)
+	json.NewEncoder(w).Encode(msghistory)
+}
+
+func fetchdbMessages(db *sql.DB, sender, receiver string) ([]Message, error) {
+	rows, _ := db.Query("SELECT sender,receiver,msg FROM messages WHERE (sender = ? AND receiver = ?) OR (receiver = ? AND sender = ?)", sender, receiver,sender, receiver)
+	var msgs []Message
+	for rows.Next() {
+		var msg Message
+		err := rows.Scan(&msg.Sender, &msg.Receiver, &msg.Msg)
+		fmt.Println(err)
+		msgs = append(msgs, msg)
+	}
+
+	return msgs, nil
 }

@@ -23,8 +23,8 @@ func Routes(db *sql.DB) http.Handler {
 		ws.HandleWS(w, r, db)
 	})
 
-	mux.HandleFunc("/sendmessage", func(w http.ResponseWriter, r *http.Request) {
-		ws.SendMessage(w, r, db)
+	mux.HandleFunc("/fetchmessages", func(w http.ResponseWriter, r *http.Request) {
+		ws.FetchMessages(w, r, db)
 	})
 
 	mux.HandleFunc("/category/{id}", func(w http.ResponseWriter, r *http.Request) {

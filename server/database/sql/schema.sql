@@ -61,3 +61,12 @@ CREATE TABLE IF NOT EXISTS comment_reactions (
     UNIQUE (user_id, comment_id),
     CHECK (reaction IN ('like', 'dislike'))
 );
+
+CREATE TABLE IF NOT EXISTS messages (
+    sender TEXT NOT NULL,
+    receiver TEXT NOT NULL,
+    msg TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sender) REFERENCES users(username) ON DELETE CASCADE,
+    FOREIGN KEY (receiver) REFERENCES users(username) ON DELETE CASCADE
+);
