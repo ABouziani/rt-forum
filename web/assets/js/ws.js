@@ -17,16 +17,20 @@ function getWebSocket() {
 
             // Check if the message has a "Sender" property
             if (data.Online) {
+                console.log(data.Active);
+                
                 let chatdiv = document.getElementById('chat-section')
                 chatdiv.innerText = ""
                 for (const uname of data.Online) {
-                    let a = document.createElement('li')
-                    a.style.cursor = "pointer"
-                    a.innerText = uname
-                    chatdiv.appendChild(a)
-                    a.addEventListener('click', () => {
-                        getChatBox(uname)
-                    })
+                    if (uname != data.Active){
+                        let a = document.createElement('li')
+                        a.style.cursor = "pointer"
+                        a.innerText = uname
+                        chatdiv.appendChild(a)
+                        a.addEventListener('click', () => {
+                            getChatBox(uname)
+                        })
+                    }
                 }
             } else if (data.msg) {
                 addMsg(data)

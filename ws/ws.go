@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"slices"
 	"sync"
 
 	"forum/server/models"
@@ -52,7 +53,7 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	Mu.Lock()
 	Clients[username] = ws
 	Mu.Unlock()
-	getOnlines()
+	Broadcast(username)
 
 	for {
 		_, msg, err := ws.ReadMessage()
@@ -60,7 +61,7 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			Mu.Lock()
 			delete(Clients, username)
 			Mu.Unlock()
-			getOnlines()
+			Broadcast("")
 			break
 		}
 
@@ -90,39 +91,47 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 }
 
-func Broadcast() {
-	for {
-		// Get the next message from the broadcast channel
-		msg := <-OnlineCh
+func Broadcast(username string) {
+	// Get the next message from the broadcast channel
+	var onlines []string
+	for client := range Clients {
+		onlines = append(onlines, client)
+	}
 
-		jsonData, err := json.Marshal(msg)
+	
+
+	// Send the message to all connected clients
+	Mu.Lock()
+	
+	for uname, client := range Clients {
+		var temp = make([]string,len(onlines))
+		copy(temp,onlines)
+		test := RemoveUname(temp,uname)
+		fmt.Println(test)
+		jsonData, err := json.Marshal(struct {
+			Online []string
+		}{Online: test})
 		if err != nil {
 			fmt.Println("Error serializing JSON:", err)
 			return
 		}
-
-		// Send the message to all connected clients
-		Mu.Lock()
-		for id, client := range Clients {
-			err := client.WriteMessage(websocket.TextMessage, jsonData)
-			if err != nil {
-				fmt.Printf("Error writing to client: %v\n", err)
-				client.Close()      // Close the connection
-				delete(Clients, id) // Remove the client from the map
-			}
+		err = client.WriteMessage(websocket.TextMessage, jsonData)
+		if err != nil {
+			fmt.Printf("Error writing to client: %v\n", err)
+			client.Close()         // Close the connection
+			delete(Clients, uname) // Remove the client from the map
 		}
-		Mu.Unlock()
+
 	}
+	Mu.Unlock()
 }
 
-func getOnlines() {
-	var onlines []string
-	for username := range Clients {
-		onlines = append(onlines, username)
-	}
-	// connectedClients := strconv.Itoa(len(Clients))
-	OnlineCh <- OnlineUsers{Online: onlines}
-}
+// func getOnlines(username string) {
+// 	fmt.Println(username)
+
+// 	// connectedClients := strconv.Itoa(len(Clients))
+// 	OnlineCh <- OnlineUsers{Online: onlines}
+// }
 
 func SendMessage(sender, receiver string, data Message) {
 	_, exist := Clients[sender]
@@ -197,7 +206,7 @@ func FetchMessages(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 }
 
 func fetchdbMessages(db *sql.DB, sender, receiver string) ([]Message, error) {
-	rows, _ := db.Query("SELECT sender,receiver,msg FROM messages WHERE (sender = ? AND receiver = ?) OR (receiver = ? AND sender = ?)", sender, receiver,sender, receiver)
+	rows, _ := db.Query("SELECT sender,receiver,msg FROM messages WHERE (sender = ? AND receiver = ?) OR (receiver = ? AND sender = ?)", sender, receiver, sender, receiver)
 	var msgs []Message
 	for rows.Next() {
 		var msg Message
@@ -207,4 +216,12 @@ func fetchdbMessages(db *sql.DB, sender, receiver string) ([]Message, error) {
 	}
 
 	return msgs, nil
+}
+
+func RemoveUname(data []string, uname string) []string {
+	index := slices.Index(data,uname)
+	if index <=-1{
+		return data
+	}
+	return append(data[:index],data[index+1:]...)
 }
