@@ -7,7 +7,6 @@ import (
 
 	"forum/server/config"
 	"forum/server/routes"
-	"forum/ws"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -29,7 +28,6 @@ func main() {
 	if err != nil {
 		log.Printf("Error creating the database schema: %v\n", err)
 	}
-	go ws.Broadcast()
 	// Start the HTTP server
 	server := http.Server{
 		Addr:    ":8080",
