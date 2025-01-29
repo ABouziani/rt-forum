@@ -18,7 +18,10 @@
   .chat-messages {
     flex: 1;
     padding: 10px;
-    overflow-y: auto;
+    overflow-y: scroll;
+    height: 200px;
+    max-height: 500px;
+    border: 1px solid #ccc;
   }
 
   .message {

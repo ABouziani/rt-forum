@@ -24,6 +24,7 @@ type OnlineUsers struct {
 }
 
 type FetchStruct struct {
+	Page interface{}
 	Receiver string
 }
 
@@ -106,11 +107,9 @@ func Broadcast(username string) {
 	for uname, client := range Clients {
 		var temp = make([]string,len(onlines))
 		copy(temp,onlines)
-		test := RemoveUname(temp,uname)
-		fmt.Println(test)
 		jsonData, err := json.Marshal(struct {
 			Online []string
-		}{Online: test})
+		}{Online: RemoveUname(temp,uname)})
 		if err != nil {
 			fmt.Println("Error serializing JSON:", err)
 			return
@@ -139,7 +138,6 @@ func SendMessage(sender, receiver string, data Message) {
 
 	if !exist || !exist2 {
 		fmt.Println("error")
-		fmt.Println(Clients)
 		return
 	}
 
@@ -194,19 +192,18 @@ func FetchMessages(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	msghistory, err := fetchdbMessages(db, sender, rdata.Receiver)
+	msghistory, err := fetchdbMessages(db, sender, rdata.Receiver,rdata.Page.(float64))
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Println(msghistory)
 	json.NewEncoder(w).Encode(msghistory)
 }
 
-func fetchdbMessages(db *sql.DB, sender, receiver string) ([]Message, error) {
-	rows, _ := db.Query("SELECT sender,receiver,msg FROM messages WHERE (sender = ? AND receiver = ?) OR (receiver = ? AND sender = ?)", sender, receiver, sender, receiver)
+func fetchdbMessages(db *sql.DB, sender, receiver string, page float64) ([]Message, error) {
+	rows, _ := db.Query("SELECT sender,receiver,msg FROM messages WHERE (sender = ? AND receiver = ?) OR (receiver = ? AND sender = ?) ORDER BY created_at DESC LIMIT 10 OFFSET ?;", sender, receiver, sender, receiver,page)
 	var msgs []Message
 	for rows.Next() {
 		var msg Message
