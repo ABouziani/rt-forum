@@ -1,14 +1,18 @@
 package controllers
 
 import (
+	"bytes"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"html"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
+	"text/template"
 
+	"forum/server/config"
 	"forum/server/models"
 	"forum/server/utils"
 )
@@ -243,7 +247,7 @@ func MyCreatedPosts(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		utils.RenderError(db, w, r, http.StatusBadRequest, valid, username)
 		return
 	}
-
+	// RenderContainer(db, w, r, "home", statusCode, posts, valid, username)
 	if err := utils.RenderTemplate(db, w, r, "home", statusCode, posts, valid, username); err != nil {
 		log.Println("Error rendering template:", err)
 		utils.RenderError(db, w, r, http.StatusInternalServerError, valid, username)
@@ -327,4 +331,13 @@ func ReactToPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	// Return the new count as JSON
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]int{"likesCount": likeCount, "dislikesCount": dislikeCount})
+}
+
+func RenderContainer(db *sql.DB, w http.ResponseWriter, r *http.Request, tmpl string, statusCode int, data any, isauth bool, username string) {
+	templ, err := template.New("cont").Parse(config.Container)
+	fmt.Println(err)
+	var buf bytes.Buffer
+	err = templ.Execute(&buf,data)
+	fmt.Println(err)
+	fmt.Println(buf.String())
 }

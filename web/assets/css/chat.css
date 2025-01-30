@@ -1,5 +1,5 @@
 .chat-container {
-    margin-top: 10px;
+    margin-top: 40px;
     width: 95%;
     height: 500px;
     background: #ffffff;
@@ -11,7 +11,7 @@
     min-height: 20vh;
     padding-top: 65px;
     margin-left: 20px;
-    min-height: 80vh;
+    /* min-height: 80vh; */
     margin-bottom: 20px;
   }
 
@@ -19,8 +19,8 @@
     flex: 1;
     padding: 10px;
     overflow-y: scroll;
-    height: 200px;
-    max-height: 500px;
+    height: 2000px;
+    /* max-height: 500px; */
     border: 1px solid #ccc;
   }
 

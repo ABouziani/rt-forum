@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bytes"
 	"database/sql"
 	"fmt"
 	"log"
@@ -73,11 +74,18 @@ func RenderTemplate(db *sql.DB, w http.ResponseWriter, r *http.Request, tmpl str
 		Categories:      categories,
 	}
 	w.WriteHeader(statusCode)
+
+	var buf bytes.Buffer
 	// Execute the template with the provided data
-	err = t.ExecuteTemplate(w, tmpl+".html", globalData)
+
+	err = t.ExecuteTemplate(&buf, tmpl+".html", globalData)
 	if err != nil {
 		return fmt.Errorf("error executing template: %w", err)
 	}
-
+	w.Header().Set("Content-Type", "text/html")
+	// json.NewEncoder(w).Encode(struct {
+	// 	Data string `json:"data"`
+	// }{Data: buf.String()})
+	buf.WriteTo(w)
 	return nil
 }

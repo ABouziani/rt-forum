@@ -33,11 +33,11 @@ function postreaction(postId, reaction) {
                 document.getElementById("dislikescount" + postId).innerHTML = `<i
                     class="fa-regular fa-thumbs-down"></i>${response.dislikesCount}`;
             } else if (xhr.status === 401) {
-                writeError(logerror,"red",`You must login first!`,1000)
+                writeError(logerror, "red", `You must login first!`, 1000)
             } else if (xhr.status === 400) {
-                writeError(logerror,"red",`Bad request!`,1000)
+                writeError(logerror, "red", `Bad request!`, 1000)
             } else if (xhr.status === 500) {
-                writeError(logerror,"red",`Try again later!`,1000)
+                writeError(logerror, "red", `Try again later!`, 1000)
             }
         };
     }
@@ -58,13 +58,13 @@ function commentreaction(commentid, reaction) {
                 document.getElementById("commentdislikescount" + commentid).innerHTML = `<i
                     class="fa-regular fa-thumbs-down"></i>${response.commentdislikesCount}`;
             } else if (xhr.status === 401) {
-                writeError(logerror,"red",`You must login first!`,1000)
-                
+                writeError(logerror, "red", `You must login first!`, 1000)
+
             } else if (xhr.status === 400) {
-                writeError(logerror,"red",`bad request!`,1000)
-            
+                writeError(logerror, "red", `bad request!`, 1000)
+
             } else if (xhr.status === 500) {
-                writeError(logerror,"red",`Try again later!`,1000)
+                writeError(logerror, "red", `Try again later!`, 1000)
             }
         };
     }
@@ -76,12 +76,12 @@ function addcomm(postId) {
     const content = document.getElementById("comment-content");
     const logerror = document.getElementById("errorlogin" + postId)
     if (!content.value) {
-        writeError(logerror,"red",'Please fill in Comment field.',3000)
+        writeError(logerror, "red", 'Please fill in Comment field.', 3000)
         return;
     }
 
     if (content.value.length > 500) {
-        writeError(logerror,"red",'Comment is too long. Please keep it under 500 characters.',3000)
+        writeError(logerror, "red", 'Comment is too long. Please keep it under 500 characters.', 3000)
         return;
     }
 
@@ -116,11 +116,11 @@ function addcomm(postId) {
                 document.getElementsByClassName("post-comments")[0].innerHTML = `<i class="fa-regular fa-comment"></i>` + response.commentscount
                 content.value = ""
             } else if (xhr.status === 400) {
-                writeError(logerror,"red",`Invalid comment!`,1000)
+                writeError(logerror, "red", `Invalid comment!`, 1000)
             } else if (xhr.status === 401) {
-                writeError(logerror,"red",`You must login first!`,1000)
+                writeError(logerror, "red", `You must login first!`, 1000)
             } else {
-                writeError(logerror,"red",`Cannot add comment now, try again later!`,1000)
+                writeError(logerror, "red", `Cannot add comment now, try again later!`, 1000)
 
             }
         };
@@ -202,17 +202,17 @@ function CreatPost() {
     const logerror = document.querySelector(".errorarea")
 
     if (title.value.trim() == "" || content.value.trim() == "" || categories.childElementCount === 0) {
-        writeError(logerror,"red",'No empty entries allowed!',3000)
+        writeError(logerror, "red", 'No empty entries allowed!', 3000)
         return;
     }
 
     if (title.value.length > 100) {
-        writeError(logerror,"red",'Title is too long. Please keep it under 100 characters.',3000)
+        writeError(logerror, "red", 'Title is too long. Please keep it under 100 characters.', 3000)
         return;
     }
 
     if (content.value.length > 3000) {
-        writeError(logerror,"red",'Content is too long. Please keep it under 3000 characters.',3000)
+        writeError(logerror, "red", 'Content is too long. Please keep it under 3000 characters.', 3000)
         return;
     }
 
@@ -236,21 +236,21 @@ function CreatPost() {
                 btn.style.cursor = "not-allowed"
 
 
-                writeError(logerror,"green",'Post created successfully, redirect to home page in 2s ...',2000)
+                writeError(logerror, "green", 'Post created successfully, redirect to home page in 2s ...', 2000)
                 setTimeout(() => {
                     window.location.href = '/'
                 }, 2000)
 
             } else if (xml.status === 401) {
-                writeError(logerror,"red",'You are loged out, redirect to login page in 2s...',2000)
+                writeError(logerror, "red", 'You are loged out, redirect to login page in 2s...', 2000)
                 setTimeout(() => {
                     window.location.href = '/login'
                 }, 2000)
 
             } else if (xml.status === 400) {
-                writeError(logerror,"red",'Bad request!',1500)
+                writeError(logerror, "red", 'Bad request!', 1500)
             } else {
-                writeError(logerror,"red",'Error: check your entries and try again!',1500)
+                writeError(logerror, "red", 'Error: check your entries and try again!', 1500)
             }
         }
     }
@@ -267,18 +267,18 @@ function register() {
     const passConfirm = document.querySelector("#password-confirmation")
     const logerror = document.querySelector(".errorarea")
 
-    if (username.value.length < 4 || username.value.includes(" ")){
-        writeError(logerror,"red","Username too short! or have space",1500)
+    if (username.value.length < 4 || username.value.includes(" ")) {
+        writeError(logerror, "red", "Username too short! or have space", 1500)
         return
     }
 
-    if (password.value.length < 6){
-        writeError(logerror,"red","password too short!",1500)
+    if (password.value.length < 6) {
+        writeError(logerror, "red", "password too short!", 1500)
         return
     }
 
-    if (password.value != passConfirm.value){
-        writeError(logerror,"red","password and password confirmation are not identical",1500)
+    if (password.value != passConfirm.value) {
+        writeError(logerror, "red", "password and password confirmation are not identical", 1500)
         return
     }
 
@@ -290,25 +290,25 @@ function register() {
     xml.onreadystatechange = function () {
         if (xml.readyState === 4) {
             if (xml.status === 200) {
-                writeError(logerror,"green",`User ${username.value} created successfully, redirect to login page in 2s ...`,2000)
+                writeError(logerror, "green", `User ${username.value} created successfully, redirect to login page in 2s ...`, 2000)
                 setTimeout(() => {
                     window.location.href = '/login'
                 }, 2000)
 
             } else if (xml.status === 302) {
-                writeError(logerror,"green",'You are already loged in, redirect to home page in 2s...',2000)
+                writeError(logerror, "green", 'You are already loged in, redirect to home page in 2s...', 2000)
                 setTimeout(() => {
                     window.location.href = '/'
                 }, 2000)
 
             } else if (xml.status === 400) {
-                writeError(logerror,"red",'Error: verify your data and try again!',1500)
-    
+                writeError(logerror, "red", 'Error: verify your data and try again!', 1500)
+
             } else if (xml.status === 304) {
-                writeError(logerror,"red",'User already exists!',1500)
-    
+                writeError(logerror, "red", 'User already exists!', 1500)
+
             } else {
-                writeError(logerror,"red",'Cannot create user, try again later!',1500)
+                writeError(logerror, "red", 'Cannot create user, try again later!', 1500)
             }
         }
     }
@@ -327,11 +327,11 @@ function login() {
     const logerror = document.querySelector(".errorarea")
 
     if (username.value.length < 4) {
-        writeError(logerror,"red","Username too short!",1500)
+        writeError(logerror, "red", "Username too short!", 1500)
         return
     }
     if (password.value.length < 6) {
-        writeError(logerror,"red","Password too short!",1500)
+        writeError(logerror, "red", "Password too short!", 1500)
         return
     }
 
@@ -343,24 +343,24 @@ function login() {
     xml.onreadystatechange = function () {
         if (xml.readyState === 4) {
             if (xml.status === 200) {
-                writeError(logerror,"green",`Login in successfully, redirect to home page in 2s ...`,2000)
+                writeError(logerror, "green", `Login in successfully, redirect to home page in 2s ...`, 2000)
                 setTimeout(() => {
                     window.location.href = '/'
                 }, 2000)
             } else if (xml.status === 302) {
-                writeError(logerror,"green",'You are already loged in, redirect to home page in 2s...',2000)
+                writeError(logerror, "green", 'You are already loged in, redirect to home page in 2s...', 2000)
                 setTimeout(() => {
                     window.location.href = '/'
                 }, 2000)
 
             } else if (xml.status === 400) {
-                writeError(logerror,"red",'Error: verify your data and try again!',1500)
+                writeError(logerror, "red", 'Error: verify your data and try again!', 1500)
             } else if (xml.status === 404) {
-                writeError(logerror,"red",'User not found!',1500)
+                writeError(logerror, "red", 'User not found!', 1500)
             } else if (xml.status === 401) {
-                writeError(logerror,"red",'Invalid username or password!',1500)
+                writeError(logerror, "red", 'Invalid username or password!', 1500)
             } else {
-                writeError(logerror,"red",'Cannot log you in now, try again later!',1500)
+                writeError(logerror, "red", 'Cannot log you in now, try again later!', 1500)
             }
         }
     }
@@ -379,10 +379,20 @@ const closeMobileNav = (e) => {
     nav.style.display = 'none'
 }
 
-function writeError(targetDiv,color,errormsg,delay) {
+function writeError(targetDiv, color, errormsg, delay) {
     targetDiv.innerText = errormsg
     targetDiv.style.color = color
     setTimeout(() => {
         targetDiv.innerText = ''
     }, delay)
+}
+
+
+
+function refetch(request) {
+    
+    fetch(request).then(resp=>resp.text()).then(html => {
+        document.documentElement.innerHTML = ""
+            document.documentElement.innerHTML = html
+        })
 }

@@ -208,7 +208,9 @@ func fetchdbMessages(db *sql.DB, sender, receiver string, page float64) ([]Messa
 	for rows.Next() {
 		var msg Message
 		err := rows.Scan(&msg.Sender, &msg.Receiver, &msg.Msg)
-		fmt.Println(err)
+		if err != nil {
+			fmt.Println(err)
+		}
 		msgs = append(msgs, msg)
 	}
 
