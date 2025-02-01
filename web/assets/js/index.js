@@ -128,57 +128,7 @@ function addcomm(postId) {
     xhr.send(`postid=${postId}&comment=${encodeURIComponent(content.value)}`);
 }
 
-const select = document.getElementById('categories-select');
-if (select) {
 
-    select.addEventListener('change', (e) => {
-        // Parse the value as JSON to extract id and label
-        const selectedValue = JSON.parse(e.target.value);
-        const { id, label } = selectedValue;
-
-        // create the elemenet for the category
-        const span = document.createElement('span');
-        span.textContent = label;
-        span.classList.add('selected-category');
-
-        // Add a remove button to the span
-        const removeBtn = document.createElement('span');
-        removeBtn.textContent = '×';
-        removeBtn.classList.add('remove-category');
-        removeBtn.addEventListener('click', () => {
-            span.remove();
-            input.remove();
-            // Re-enable the corresponding option in the select
-            Array.from(e.target.options).find(option => {
-                try {
-                    const optionValue = JSON.parse(option.value);
-                    return optionValue.id === id;
-                } catch {
-                    return false;
-                }
-            }).disabled = false;
-        });
-
-        span.appendChild(removeBtn);
-
-        // create hidden input to hold the id of selected category
-        const input = document.createElement('input')
-        input.type = 'hidden';
-        input.value = id
-        input.name = 'categories'
-
-        // add the elements (span and hidden input) 
-        // at the first position of the categories container
-        const categoriesContainer = document.querySelector('.selected-categories');
-        categoriesContainer.append(input, span);
-
-        // disable the option selected in the select
-        e.target.options[e.target.selectedIndex].disabled = true;
-
-        // Reset the select 
-        e.target.selectedIndex = 0;
-    });
-}
 
 async function pagination(dir, data) {
     const path = window.location.pathname
@@ -388,11 +338,112 @@ function writeError(targetDiv, color, errormsg, delay) {
 }
 
 
-
 function refetch(request) {
-    
-    fetch(request).then(resp=>resp.text()).then(html => {
-        document.documentElement.innerHTML = ""
-            document.documentElement.innerHTML = html
-        })
+    fetch(request).then(resp => resp.text()).then(html => {
+        let dom = new DOMParser().parseFromString(html, 'text/html')
+        document.querySelector('.container').innerHTML = dom.querySelector('.container').innerHTML
+    })
 }
+
+
+
+
+function selectCat(e) {
+    // Parse the value as JSON to extract id and label
+    const selectedValue = JSON.parse(e.target.value);
+    const { id, label } = selectedValue;
+
+    // create the elemenet for the category
+    const span = document.createElement('span');
+    span.textContent = label;
+    span.classList.add('selected-category');
+
+    // Add a remove button to the span
+    const removeBtn = document.createElement('span');
+    removeBtn.textContent = '×';
+    removeBtn.classList.add('remove-category');
+    removeBtn.addEventListener('click', () => {
+        span.remove();
+        input.remove();
+        // Re-enable the corresponding option in the select
+        Array.from(e.target.options).find(option => {
+            try {
+                const optionValue = JSON.parse(option.value);
+                return optionValue.id === id;
+            } catch {
+                return false;
+            }
+        }).disabled = false;
+    });
+
+    span.appendChild(removeBtn);
+
+    // create hidden input to hold the id of selected category
+    const input = document.createElement('input')
+    input.type = 'hidden';
+    input.value = id
+    input.name = 'categories'
+
+    // add the elements (span and hidden input) 
+    // at the first position of the categories container
+    const categoriesContainer = document.querySelector('.selected-categories');
+    categoriesContainer.append(input, span);
+
+    // disable the option selected in the select
+    e.target.options[e.target.selectedIndex].disabled = true;
+
+    // Reset the select 
+    e.target.selectedIndex = 0;
+
+}
+
+// function selectCat(e) {
+//     var select = document.getElementById('categories-select');
+//     if (select) {
+//         // Parse the value as JSON to extract id and label
+//         const selectedValue = JSON.parse(e.target.value);
+//         const { id, label } = selectedValue;
+
+//         // create the elemenet for the category
+//         const span = document.createElement('span');
+//         span.textContent = label;
+//         span.classList.add('selected-category');
+
+//         // Add a remove button to the span
+//         const removeBtn = document.createElement('span');
+//         removeBtn.textContent = '×';
+//         removeBtn.classList.add('remove-category');
+//         removeBtn.addEventListener('click', () => {
+//             span.remove();
+//             input.remove();
+//             // Re-enable the corresponding option in the select
+//             Array.from(e.target.options).find(option => {
+//                 try {
+//                     const optionValue = JSON.parse(option.value);
+//                     return optionValue.id === id;
+//                 } catch {
+//                     return false;
+//                 }
+//             }).disabled = false;
+//         });
+
+//         span.appendChild(removeBtn);
+
+//         // create hidden input to hold the id of selected category
+//         const input = document.createElement('input')
+//         input.type = 'hidden';
+//         input.value = id
+//         input.name = 'categories'
+
+//         // add the elements (span and hidden input) 
+//         // at the first position of the categories container
+//         const categoriesContainer = document.querySelector('.selected-categories');
+//         categoriesContainer.append(input, span);
+
+//         // disable the option selected in the select
+//         e.target.options[e.target.selectedIndex].disabled = true;
+
+//         // Reset the select 
+//         e.target.selectedIndex = 0;
+//     }
+// }

@@ -16,7 +16,7 @@
 
 <body>
     <header>
-        <a href="/">
+        <a class="z01forum" onclick="refetch('/')">
             <p>
                 <img class="img-01" src="/assets/images/01.png" alt="01">
                 <span class="forum-title">forum</span>
@@ -35,5 +35,8 @@
         <a href="/login" class="login-link">Log in
             <i class="fa-solid fa-right-to-bracket"></i>
         </a>
+        {{end}}
+        {{ if .IsAuthenticated}}
+        <script src="/assets/js/ws.js" defer></script>
         {{end}}
     </header>

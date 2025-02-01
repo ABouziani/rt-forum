@@ -30,9 +30,9 @@
     padding: 0;
 }
 
-/* li {
+li,.z01forum {
   cursor: pointer;  
-} */
+}
 
 body {
     background-color: var(--color-bg);

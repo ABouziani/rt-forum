@@ -16,7 +16,7 @@
         {{range .Data}}
         <div class="post">
             <div class="post-body">
-                <a href="/post/{{.ID}}" class="post-title">{{.Title}}</a>
+                <a onclick="refetch('/post/{{.ID}}')" class="post-title">{{.Title}}</a>
                 <div class="post-header">
                     <p class="post-user">{{.UserName}} </p>
                     <span></span>
@@ -35,7 +35,7 @@
                 <button id="dislikescount{{.ID}}" onclick="postreaction('{{.ID}}','dislike')"
                     class="post-dislike post-footer-hover"><i
                         class="fa-regular fa-thumbs-down"></i>{{.Dislikes}}</button>
-                <a href="/post/{{.ID}}" class="post-comments post-footer-hover">
+                <a onclick="refetch('/post/{{.ID}}')" class="post-comments post-footer-hover">
                     <i class="fa-regular fa-comment"></i>{{.Comments}}
                 </a>
             </div>
