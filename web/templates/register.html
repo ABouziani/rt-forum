@@ -1,4 +1,5 @@
 {{template "header.html" .}}
+
 <div class="register-page">
     <div class="register-card">
         <h1>Register</h1>
@@ -11,7 +12,7 @@
             <button onclick="register()" type="submit" class="register-submit">Register<i class="fa-solid fa-user-plus"></i></button>
         </div>
         <span class="form-line"></span>
-        <p class="form-second-option">Already registered? <a href="/login">Log in</a></p>
+        <p class="form-second-option">Already registered? <a style="cursor: pointer; color: blue;" onclick="refetchLogin('/login')">Log in</a></p>
     </div>
 </div>
 {{template "footer.html"}}

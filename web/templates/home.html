@@ -3,6 +3,7 @@
 
 <div class="container">
     <div class="posts">
+        <p class="currentPage">Home</p>
         <div class="posts-header">
             <button class="nav-button" onclick="displayMobileNav()">
                 <i class="fa-solid fa-bars"></i>
@@ -16,7 +17,7 @@
         {{range .Data}}
         <div class="post">
             <div class="post-body">
-                <a onclick="refetch('/post/{{.ID}}')" class="post-title">{{.Title}}</a>
+                <a onclick="refetch('/post/{{.ID}}')" style="cursor: pointer;" class="post-title">{{.Title}}</a>
                 <div class="post-header">
                     <p class="post-user">{{.UserName}} </p>
                     <span></span>

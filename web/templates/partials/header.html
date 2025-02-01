@@ -25,16 +25,12 @@
         {{ if .IsAuthenticated}}
         <div class="header-user">
             <span class="header-username"><i class="fa-regular fa-user"></i>{{.UserName}}</span>
-            <form action="/logout" method="post">
-                <button class="logout-link">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                </button>
-            </form>
+
+            <button onclick="logout()" class="logout-link">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
+
         </div>
-        {{else}}
-        <a href="/login" class="login-link">Log in
-            <i class="fa-solid fa-right-to-bracket"></i>
-        </a>
         {{end}}
         {{ if .IsAuthenticated}}
         <script src="/assets/js/ws.js" defer></script>

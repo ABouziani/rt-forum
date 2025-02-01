@@ -20,6 +20,16 @@ import (
 func IndexPosts(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	_, username, valid := models.ValidSession(r, db)
 
+	if !valid {
+		err := utils.RenderTemplate(db, w, r, "login", http.StatusOK, nil, false, "")
+		if err != nil {
+			log.Println(err)
+			utils.RenderError(db, w, r, http.StatusInternalServerError, false, "")
+			return
+		}
+		return
+	}
+
 	if r.Method != http.MethodGet {
 		utils.RenderError(db, w, r, http.StatusMethodNotAllowed, valid, username)
 		return
@@ -337,7 +347,7 @@ func RenderContainer(db *sql.DB, w http.ResponseWriter, r *http.Request, tmpl st
 	templ, err := template.New("cont").Parse(config.Container)
 	fmt.Println(err)
 	var buf bytes.Buffer
-	err = templ.Execute(&buf,data)
+	err = templ.Execute(&buf, data)
 	fmt.Println(err)
 	fmt.Println(buf.String())
 }

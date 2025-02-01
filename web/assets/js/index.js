@@ -18,6 +18,8 @@ function throttle(fn, delay) {
 
 const addcomment = throttle(addcomm, 5000)
 
+let cats = ["", "Technology", "Health", "Travel", "Education", "Entertainment"]
+
 function postreaction(postId, reaction) {
     const logerror = document.getElementById("errorlogin" + postId)
     logerror.innerText = ``
@@ -222,112 +224,139 @@ function CreatPost() {
 
 
 function register() {
-    const email = document.querySelector("#email")
-    const username = document.querySelector("#username")
-    const password = document.querySelector("#password")
-    const passConfirm = document.querySelector("#password-confirmation")
-    const logerror = document.querySelector(".errorarea")
+    const email = document.querySelector("#email");
+    const username = document.querySelector("#username");
+    const password = document.querySelector("#password");
+    const passConfirm = document.querySelector("#password-confirmation");
+    const logerror = document.querySelector(".errorarea");
 
     if (username.value.length < 4 || username.value.includes(" ")) {
-        writeError(logerror, "red", "Username too short! or have space", 1500)
-        return
+        writeError(logerror, "red", "Username too short! or has space", 1500);
+        return;
     }
 
     if (password.value.length < 6) {
-        writeError(logerror, "red", "password too short!", 1500)
-        return
+        writeError(logerror, "red", "Password too short!", 1500);
+        return;
     }
 
-    if (password.value != passConfirm.value) {
-        writeError(logerror, "red", "password and password confirmation are not identical", 1500)
-        return
+    if (password.value !== passConfirm.value) {
+        writeError(logerror, "red", "Password and password confirmation are not identical", 1500);
+        return;
     }
 
+    // Prepare the data to be sent
+    const formData = new URLSearchParams();
+    formData.append('email', email.value);
+    formData.append('username', username.value);
+    formData.append('password', password.value);
+    formData.append('password-confirmation', passConfirm.value);
 
-    const xml = new XMLHttpRequest();
-    xml.open("POST", "/signup", true)
-    xml.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
-
-    xml.onreadystatechange = function () {
-        if (xml.readyState === 4) {
-            if (xml.status === 200) {
-                writeError(logerror, "green", `User ${username.value} created successfully, redirect to login page in 2s ...`, 2000)
-                setTimeout(() => {
-                    window.location.href = '/login'
-                }, 2000)
-
-            } else if (xml.status === 302) {
-                writeError(logerror, "green", 'You are already loged in, redirect to home page in 2s...', 2000)
-                setTimeout(() => {
-                    window.location.href = '/'
-                }, 2000)
-
-            } else if (xml.status === 400) {
-                writeError(logerror, "red", 'Error: verify your data and try again!', 1500)
-
-            } else if (xml.status === 304) {
-                writeError(logerror, "red", 'User already exists!', 1500)
-
+    // Send the request using fetch
+    fetch('/signup', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData.toString(),
+    })
+        .then(response => {
+            if (response.status === 200) {
+                writeError(logerror, "green", `User ${username.value} created successfully, redirecting to login page in 2s ...`, 2000);
+                setTimeout(async () => {
+                    document.documentElement.innerHTML = await response.text()
+                }, 2000);
+            } else if (response.status === 302) {
+                writeError(logerror, "green", 'You are already logged in, redirecting to home page in 2s...', 2000);
+                setTimeout(async () => {
+                    document.documentElement.innerHTML = await response.text()
+                }, 2000);
+            } else if (response.status === 400) {
+                writeError(logerror, "red", 'Error: Verify your data and try again!', 1500);
+            } else if (response.status === 304) {
+                writeError(logerror, "red", 'User already exists!', 1500);
             } else {
-                writeError(logerror, "red", 'Cannot create user, try again later!', 1500)
+                writeError(logerror, "red", 'Cannot create user, try again later!', 1500);
             }
-        }
-    }
-
-    // Get form data
-    xml.send(`email=${encodeURIComponent(email.value)}&username=${encodeURIComponent(username.value)}&password=${encodeURIComponent(password.value)}&password-confirmation=${encodeURIComponent(passConfirm.value)}`)
-
-
+        })
+        .catch(error => {
+            writeError(logerror, "red", 'Network error. Please try again later!', 1500);
+        });
 }
 
 
 
+
 function login() {
-    const username = document.querySelector("#username")
-    const password = document.querySelector("#password")
-    const logerror = document.querySelector(".errorarea")
+    const username = document.querySelector("#username");
+    const password = document.querySelector("#password");
+    const logerror = document.querySelector(".errorarea");
 
     if (username.value.length < 4) {
-        writeError(logerror, "red", "Username too short!", 1500)
-        return
+        writeError(logerror, "red", "Username too short!", 1500);
+        return;
     }
     if (password.value.length < 6) {
-        writeError(logerror, "red", "Password too short!", 1500)
-        return
+        writeError(logerror, "red", "Password too short!", 1500);
+        return;
     }
 
+    const formData = new URLSearchParams();
+    formData.append('username', username.value);
+    formData.append('password', password.value);
 
-    const xml = new XMLHttpRequest();
-    xml.open("POST", "/signin", true)
-    xml.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
+    fetch('/signin', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData.toString(),
+    })
+        .then(response => {
+            if (response.status === 200) {
 
-    xml.onreadystatechange = function () {
-        if (xml.readyState === 4) {
-            if (xml.status === 200) {
-                writeError(logerror, "green", `Login in successfully, redirect to home page in 2s ...`, 2000)
-                setTimeout(() => {
-                    window.location.href = '/'
-                }, 2000)
-            } else if (xml.status === 302) {
-                writeError(logerror, "green", 'You are already loged in, redirect to home page in 2s...', 2000)
-                setTimeout(() => {
-                    window.location.href = '/'
-                }, 2000)
 
-            } else if (xml.status === 400) {
-                writeError(logerror, "red", 'Error: verify your data and try again!', 1500)
-            } else if (xml.status === 404) {
-                writeError(logerror, "red", 'User not found!', 1500)
-            } else if (xml.status === 401) {
-                writeError(logerror, "red", 'Invalid username or password!', 1500)
+                writeError(logerror, "green", `Login in successfully, redirect to home page in 2s ...`, 2000);
+                setTimeout(async () => {
+                    document.documentElement.innerHTML = await response.text()
+                }, 2000);
+            } else if (response.status === 302) {
+                writeError(logerror, "green", 'You are already logged in, redirect to home page in 2s...', 2000);
+                setTimeout(async () => {
+                    document.documentElement.innerHTML = await response.text()
+                }, 2000);
+            } else if (response.status === 400) {
+                writeError(logerror, "red", 'Error: verify your data and try again!', 1500);
+            } else if (response.status === 404) {
+                writeError(logerror, "red", 'User not found!', 1500);
+            } else if (response.status === 401) {
+                writeError(logerror, "red", 'Invalid username or password!', 1500);
             } else {
-                writeError(logerror, "red", 'Cannot log you in now, try again later!', 1500)
+                writeError(logerror, "red", 'Cannot log you in now, try again later!', 1500);
             }
-        }
-    }
+        })
+        .catch(error => {
+            writeError(logerror, "red", 'Network error, please try again later!', 1500);
+        });
+}
 
-    // Get form data
-    xml.send(`username=${encodeURIComponent(username.value)}&password=${encodeURIComponent(password.value)}`)
+
+function logout() {
+
+    fetch('/logout', {
+        method: 'POST',
+    })
+        .then(async response => {
+            if (response.status === 200) {
+                document.documentElement.innerHTML = await response.text()
+            } else {
+                console.log("errrrrror");
+
+            }
+        })
+        .catch(error => {
+            writeError(logerror, "red", 'Network error, please try again later!', 1500);
+        });
 }
 
 const displayMobileNav = (e) => {
@@ -350,6 +379,8 @@ function writeError(targetDiv, color, errormsg, delay) {
 
 let data = true
 async function refetch(request) {
+
+
     let re = true
     await fetch(request).then(resp => resp.text())
         .then(html => {
@@ -360,6 +391,7 @@ async function refetch(request) {
                 document.querySelector('.next').setAttribute('name', request)
                 document.querySelector('.back').setAttribute('name', request)
             }
+
         })
         .catch(err => {
             data = false
@@ -367,20 +399,36 @@ async function refetch(request) {
         }
 
         )
+    switch (true) {
+        case request.includes("/category"):
+            document.querySelector('.currentPage').innerText = cats[request[10]];
+            break;
+        case request.includes("mycreatedposts"):
+            document.querySelector('.currentPage').innerText = "My Posts";
+            break;
+        case request.includes("mylikedposts"):
+            document.querySelector('.currentPage').innerText = "My Liked Posts";
+            break;
+        default:
+            document.querySelector('.currentPage').innerText = "Home";
+            break;
+    }
     return re
 }
 
 var PageID = 1
 
 async function pagination(dir) {
+
     if (dir === "next" && data) {
         let path = document.querySelector('.next').name
         let index = path.indexOf('?')
         if (index != -1) {
             path = path.slice(0, index)
             console.log(path);
+        } else {
+            PageID = 1
         }
-        console.log(path);
 
         // const page = +document.querySelector(".currentpage").innerText + 1
         PageID++
@@ -458,3 +506,10 @@ function selectCat(e) {
 
 }
 
+
+async function refetchLogin(request) {
+    fetch(request).then(resp => resp.text())
+        .then(html => {
+            document.documentElement.innerHTML = html
+        })
+}
