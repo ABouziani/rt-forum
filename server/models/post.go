@@ -250,7 +250,7 @@ func FetchPostsByCategory(db *sql.DB, categoryID int, currentpage int) ([]Post, 
 			INNER JOIN post_category pc ON p.id = pc.post_id
 		WHERE pc.category_id = ?
 		ORDER BY
-			p.created_at
+			p.created_at DESC
 		LIMIT 10 OFFSET ? ;
 	`
 	rows, err := db.Query(query, categoryID, currentpage)

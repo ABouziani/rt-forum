@@ -1,3 +1,6 @@
+
+
+
 var ws; // Store the WebSocket instance
 var pagee = 0;
 function getWebSocket() {

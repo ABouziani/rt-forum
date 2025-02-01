@@ -130,19 +130,30 @@ function addcomm(postId) {
 
 
 
-async function pagination(dir, data) {
-    const path = window.location.pathname
-    if (dir === "next" && data) {
-        const page = +document.querySelector(".currentpage").innerText + 1
-        window.location.href = path + "?PageID=" + page;
-    }
+function giveData() {
+    // const queryString = window.location.search;
+    // const urlParams = new URLSearchParams(queryString);
+    // const path = window.location.pathname
+    // let page = 1
 
-    if (dir === "back" && document.querySelector(".currentpage").innerText > "1") {
-        const page = +document.querySelector(".currentpage").innerText - 1
-        window.location.href = path + "?PageID=" + page;
+    // if (!isNaN(parseInt(urlParams.get('PageID')))) {
+    //     page = parseInt(urlParams.get('PageID'))
+    // }
+    // fetch(path + "?PageID=" + (PageID + 1)).then(response => {
+    //     if (response.status != 200) {
+    //         document.querySelector(".container").innerHTML=
+    //         const nextbtn = document.querySelector(".next")
+    //         nextbtn.outerHTML = `<a class="next" style="cursor : not-allowed; color : grey;">Next &raquo;</a>`
+    //     }
+    // })
+    refetch(path + "?PageID=" + (PageID + 1))
+
+    if (PageID <= 1) {
+        const backbtn = document.querySelector(".back")
+        backbtn.outerHTML = `<a class="back" style="cursor : not-allowed; color : grey;">&laquo; Back</a>`
     }
+    document.querySelector(".currentpage").innerText = PageID > 0 ? PageID : 1
 }
-
 
 
 function CreatPost() {
@@ -337,15 +348,65 @@ function writeError(targetDiv, color, errormsg, delay) {
     }, delay)
 }
 
+let data = true
+async function refetch(request) {
+    let re = true
+    await fetch(request).then(resp => resp.text())
+        .then(html => {
+            data = true
+            let dom = new DOMParser().parseFromString(html, 'text/html')
+            document.querySelector('.container').innerHTML = dom.querySelector('.container').innerHTML
+            if (document.querySelector('.next')) {
+                document.querySelector('.next').setAttribute('name', request)
+                document.querySelector('.back').setAttribute('name', request)
+            }
+        })
+        .catch(err => {
+            data = false
+            re = false
+        }
 
-function refetch(request) {
-    fetch(request).then(resp => resp.text()).then(html => {
-        let dom = new DOMParser().parseFromString(html, 'text/html')
-        document.querySelector('.container').innerHTML = dom.querySelector('.container').innerHTML
-    })
+        )
+    return re
 }
 
+var PageID = 1
 
+async function pagination(dir) {
+    if (dir === "next" && data) {
+        let path = document.querySelector('.next').name
+        let index = path.indexOf('?')
+        if (index != -1) {
+            path = path.slice(0, index)
+            console.log(path);
+        }
+        console.log(path);
+
+        // const page = +document.querySelector(".currentpage").innerText + 1
+        PageID++
+        let er = await refetch(`${path}?PageID=${PageID}`)
+        if (!er) {
+            PageID--
+        }
+
+
+    }
+
+    if (dir === "back" && PageID > 1) {
+        let path = document.querySelector('.back').name
+        // const page = +document.querySelector(".currentpage").innerText - 1
+        let index = path.indexOf('?')
+        if (index != -1) {
+            path = path.slice(0, index)
+            console.log(path);
+        }
+        PageID--
+        console.log(path);
+
+        refetch(`${path}?PageID=${PageID}`)
+    }
+    console.log(PageID);
+}
 
 
 function selectCat(e) {
@@ -397,53 +458,3 @@ function selectCat(e) {
 
 }
 
-// function selectCat(e) {
-//     var select = document.getElementById('categories-select');
-//     if (select) {
-//         // Parse the value as JSON to extract id and label
-//         const selectedValue = JSON.parse(e.target.value);
-//         const { id, label } = selectedValue;
-
-//         // create the elemenet for the category
-//         const span = document.createElement('span');
-//         span.textContent = label;
-//         span.classList.add('selected-category');
-
-//         // Add a remove button to the span
-//         const removeBtn = document.createElement('span');
-//         removeBtn.textContent = '×';
-//         removeBtn.classList.add('remove-category');
-//         removeBtn.addEventListener('click', () => {
-//             span.remove();
-//             input.remove();
-//             // Re-enable the corresponding option in the select
-//             Array.from(e.target.options).find(option => {
-//                 try {
-//                     const optionValue = JSON.parse(option.value);
-//                     return optionValue.id === id;
-//                 } catch {
-//                     return false;
-//                 }
-//             }).disabled = false;
-//         });
-
-//         span.appendChild(removeBtn);
-
-//         // create hidden input to hold the id of selected category
-//         const input = document.createElement('input')
-//         input.type = 'hidden';
-//         input.value = id
-//         input.name = 'categories'
-
-//         // add the elements (span and hidden input) 
-//         // at the first position of the categories container
-//         const categoriesContainer = document.querySelector('.selected-categories');
-//         categoriesContainer.append(input, span);
-
-//         // disable the option selected in the select
-//         e.target.options[e.target.selectedIndex].disabled = true;
-
-//         // Reset the select 
-//         e.target.selectedIndex = 0;
-//     }
-// }
