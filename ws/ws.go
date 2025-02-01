@@ -40,7 +40,7 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	_, username, valid := models.ValidSession(r, db)
 
 	if !valid {
-		http.Redirect(w, r, "/login", http.StatusFound)
+		w.WriteHeader(401)
 		return
 	}
 

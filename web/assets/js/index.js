@@ -382,7 +382,13 @@ async function refetch(request) {
 
 
     let re = true
-    await fetch(request).then(resp => resp.text())
+    await fetch(request).then(resp => {
+        if (resp.ok){
+            return resp.text()
+        } else if(resp.status == 401){
+            refetchLogin('/login')
+        }
+    })
         .then(html => {
             data = true
             let dom = new DOMParser().parseFromString(html, 'text/html')
@@ -394,6 +400,8 @@ async function refetch(request) {
 
         })
         .catch(err => {
+            console.log(err);
+            
             data = false
             re = false
         }
