@@ -375,10 +375,11 @@ async function refetch(request) {
 
     let re = true
     await fetch(request).then(resp => {
-        if (resp.ok && !resp.redirected) {
+        let redirect = resp.headers.get('Location')== '/login';
+        if (resp.ok && !redirect) {
             return resp.text()
 
-        } else if (resp.status == 401 || resp.redirected) {
+        } else if (resp.status == 401 || redirect) {
             refetchLogin('/login')
             return
         }
