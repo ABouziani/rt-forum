@@ -21,12 +21,7 @@ func IndexPosts(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	_, username, valid := models.ValidSession(r, db)
 
 	if !valid {
-		err := utils.RenderTemplate(db, w, r, "login", http.StatusOK, nil, false, "")
-		if err != nil {
-			log.Println(err)
-			utils.RenderError(db, w, r, http.StatusInternalServerError, false, "")
-			return
-		}
+		http.Redirect(w, r, "/login", http.StatusSeeOther) 
 		return
 	}
 

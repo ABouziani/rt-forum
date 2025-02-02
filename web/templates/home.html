@@ -54,28 +54,7 @@
         <a onclick="pagination('next', `{{if .Data}}true{{end}}`)" class="next" name="/">Next
             &raquo;</a>
     </div>
-    <!-- <script>
-        const queryString = window.location.search;
-        const urlParams = new URLSearchParams(queryString);
-        const path = window.location.pathname
-        let page = 1
 
-        if (!isNaN(parseInt(urlParams.get('PageID')))) {
-            page = parseInt(urlParams.get('PageID'))
-        }
-        fetch(path + "?PageID=" + (page + 1)).then(response => {
-            if (response.status != 200) {
-                const nextbtn = document.querySelector(".next")
-                nextbtn.outerHTML = `<a class="next" style="cursor : not-allowed; color : grey;">Next &raquo;</a>`
-            }
-        })
-
-        if (urlParams.get('PageID') <= 1) { 
-            const backbtn = document.querySelector(".back")
-            backbtn.outerHTML = `<a class="back" style="cursor : not-allowed; color : grey;">&laquo; Back</a>`
-        }
-        document.querySelector(".currentpage").innerText = urlParams.get('PageID') > 0 ? urlParams.get('PageID') : 1
-    </script> -->
 </div>
 </div>
 {{template "footer.html"}}

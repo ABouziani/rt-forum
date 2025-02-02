@@ -81,12 +81,6 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			return
 		}
 
-		// data, err := json.Marshal(receivedMsg)
-		// if err != nil {
-		// 	fmt.Println("Error serializing JSON:", err)
-		// 	return
-		// }
-
 		SendMessage(receivedMsg.Sender, receivedMsg.Receiver, receivedMsg)
 
 	}
@@ -117,20 +111,14 @@ func Broadcast(username string) {
 		err = client.WriteMessage(websocket.TextMessage, jsonData)
 		if err != nil {
 			fmt.Printf("Error writing to client: %v\n", err)
-			client.Close()         // Close the connection
-			delete(Clients, uname) // Remove the client from the map
+			client.Close()         
+			delete(Clients, uname) 
 		}
 
 	}
 	Mu.Unlock()
 }
 
-// func getOnlines(username string) {
-// 	fmt.Println(username)
-
-// 	// connectedClients := strconv.Itoa(len(Clients))
-// 	OnlineCh <- OnlineUsers{Online: onlines}
-// }
 
 func SendMessage(sender, receiver string, data Message) {
 	_, exist := Clients[sender]
@@ -143,28 +131,6 @@ func SendMessage(sender, receiver string, data Message) {
 
 	Clients[sender].WriteJSON(data)
 	Clients[receiver].WriteJSON(data)
-	// fmt.Println(string(data))
-	// 	_, username, valid := models.ValidSession(r, db)
-	// 	if r.Method != http.MethodPost {
-	// 		utils.RenderError(db, w, r, http.StatusMethodNotAllowed, valid, username)
-	// 		return
-	// 	}
-	// 	if !valid {
-	// 		w.WriteHeader(401)
-	// 		return
-	// 	}
-	// 	if err := r.ParseForm(); err != nil {
-	// 		w.WriteHeader(400)
-	// 		return
-	// 	}
-
-	// 	resp, err := io.ReadAll(r.Body)
-	// 	if err != nil {
-	// 		fmt.Println("error reading requets body")
-	// 		return
-	// 	}
-
-	// fmt.Println(receivedMsg)
 }
 
 func StoreMsg(db *sql.DB, sender, receiver, msg string) error {

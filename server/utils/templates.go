@@ -83,9 +83,6 @@ func RenderTemplate(db *sql.DB, w http.ResponseWriter, r *http.Request, tmpl str
 		return fmt.Errorf("error executing template: %w", err)
 	}
 	w.Header().Set("Content-Type", "text/html")
-	// json.NewEncoder(w).Encode(struct {
-	// 	Data string `json:"data"`
-	// }{Data: buf.String()})
 	buf.WriteTo(w)
 	return nil
 }

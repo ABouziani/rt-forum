@@ -58,13 +58,12 @@ function getWebSocket() {
         };
     }
 
-    return ws; // Return the same WebSocket instance
+    return ws; 
 }
 
 
 window.addEventListener("load", getWebSocket);
 
-{/* <div id="spaces"><br><br><br><br><br><br><br></div> */}
 
 function getChatBox(receiver) {
     if (pagee < 10) {
@@ -131,28 +130,11 @@ function addMsg(data) {
 
 function sendMessage(uname) {
     let message = document.querySelector('#chatInput').value
-    // const chatInput = document.getElementById("chatInput");
-    // const chatMessages = document.getElementById("chatMessages");
+
     ws.send(JSON.stringify({
         Receiver: uname,
         Msg: message,
     }))
-    // fetch("/sendmessage", {
-    //     method: "POST",
-    //     header: {
-    //         "Content-Type": "application/json"
-    //     },
-    //     body: ,
-    // }).then(data => {
-    //     if (data.ok) {
-    //         const messageElement = document.createElement("div");
-    //         messageElement.className = "message sent";
-    //         messageElement.textContent = message;
-    //         chatMessages.appendChild(messageElement);
-    //         chatInput.value = "";
-    //         chatMessages.scrollTop = chatMessages.scrollHeight;
-    //     }
-    // })
 }
 
 
