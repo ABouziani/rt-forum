@@ -27,6 +27,7 @@ function getWebSocket() {
                 for (const uname of data.Online) {
                     if (uname != data.Active) {
                         let a = document.createElement('li')
+                        a.className='chat-section-conect'
                         a.style.cursor = "pointer"
                         a.innerText = uname
                         chatdiv.appendChild(a)
@@ -36,6 +37,20 @@ function getWebSocket() {
                         })
                     }
                 }
+                for (const uname of data.NotOnline) {
+                    if (uname != data.Active) {
+                        let a = document.createElement('li')
+                        a.className='chat-section-notconect'
+                        a.style.cursor = "pointer"
+                        a.innerText = uname
+                        chatdiv.appendChild(a)
+                        a.addEventListener('click', () => {
+                            pagee = 0
+                            getChatBox(uname)
+                        })
+                    }
+                }
+
             } else if (data.msg) {
                 addMsg(data)
             }
@@ -58,7 +73,7 @@ function getWebSocket() {
         };
     }
 
-    return ws; 
+    return ws;
 }
 
 
@@ -92,7 +107,7 @@ function getChatBox(receiver) {
     })
         .then(resp => resp.json())
         .then(data => {
-            if (data){
+            if (data) {
                 for (let i = 0; i < data.length; i++) {
                     const chatMessages = document.getElementById("chatMessages");
                     const messageElement = document.createElement("div");
@@ -106,26 +121,33 @@ function getChatBox(receiver) {
                     chatMessages.scrollTop = 100;
                 }
             }
-            
+
         })
 }
 
 
 function addMsg(data) {
-    let receiver = document.querySelector('#receiver').innerText
-    let message = data.msg
-    const chatInput = document.getElementById("chatInput");
-    const chatMessages = document.getElementById("chatMessages");
-    const messageElement = document.createElement("div");
-    if (data.receiver == receiver) {
-        messageElement.className = "message sent";
-    } else {
-        messageElement.className = "message received";
+    if (document.querySelector('#receiver')){
+
+        let receiver = document.querySelector('#receiver').innerText
+        console.log(receiver,data.receiver,data.Sender,data.msg);
+        
+        let message = data.msg
+        const chatInput = document.getElementById("chatInput");
+        const chatMessages = document.getElementById("chatMessages");
+        const messageElement = document.createElement("div");
+        if (data.receiver == receiver) {
+            messageElement.className = "message sent";
+        } else if (data.Sender == receiver) {
+            messageElement.className = "message received";
+        }else {
+            return
+        }
+        messageElement.textContent = message;
+        chatMessages.appendChild(messageElement);
+        chatInput.value = "";
+        chatMessages.scrollTop = chatMessages.scrollHeight;
     }
-    messageElement.textContent = message;
-    chatMessages.appendChild(messageElement);
-    chatInput.value = "";
-    chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 function sendMessage(uname) {
@@ -158,4 +180,4 @@ function debounce(fn, delay) {
     };
 }
 
-const trchatbox = debounce(getChatBox,2000)
+const trchatbox = debounce(getChatBox, 2000)

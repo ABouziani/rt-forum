@@ -1,5 +1,5 @@
 window.addEventListener('resize', () => {
-    if (document.body.clientWidth > 600) {
+    if (document.body.clientWidth > 600 && document.querySelector('.mobile-nav')) {
         document.querySelector('.mobile-nav').style.display = 'none';
     }
 })
@@ -256,7 +256,7 @@ function register() {
             if (response.status === 200) {
                 writeError(logerror, "green", `User ${username.value} created successfully, redirecting to login page in 2s ...`, 2000);
                 setTimeout(async () => {
-                    document.documentElement.innerHTML = await response.text()
+                    refetchLogin('/login')
                 }, 2000);
             } else if (response.status === 302) {
                 writeError(logerror, "green", 'You are already logged in, redirecting to home page in 2s...', 2000);
