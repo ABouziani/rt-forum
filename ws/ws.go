@@ -9,6 +9,7 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"time"
 
 	"forum/server/models"
 
@@ -16,9 +17,10 @@ import (
 )
 
 type Message struct {
-	Sender   string
-	Receiver string `json:"receiver"`
-	Msg      string `json:"msg"`
+	Sender     string
+	Receiver   string `json:"receiver"`
+	Msg        string `json:"msg"`
+	Created_at string `json:"created_at"`
 }
 
 type OnlineUsers struct {
@@ -56,7 +58,7 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	Mu.Lock()
 	Clients[username] = ws
 	Mu.Unlock()
-	Broadcast(db,username)
+	Broadcast(db, username)
 
 	for {
 		_, msg, err := ws.ReadMessage()
@@ -64,7 +66,7 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			Mu.Lock()
 			delete(Clients, username)
 			Mu.Unlock()
-			Broadcast(db,"")
+			Broadcast(db, "")
 			break
 		}
 
@@ -82,20 +84,20 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			fmt.Println(err)
 			return
 		}
-
+		receivedMsg.Created_at = time.Now().Format("02-01-06 15:04:05")
 		SendMessage(receivedMsg.Sender, receivedMsg.Receiver, receivedMsg)
 
 	}
 }
 
-func Broadcast(db *sql.DB,username string) {
+func Broadcast(db *sql.DB, username string) {
 	// Get the next message from the broadcast channel
 	var onlines []string
 	for client := range Clients {
 		onlines = append(onlines, client)
 	}
-	ClientNotConect, err := FetchClinetNoConnect(db,onlines)
-	if (err != nil){
+	ClientNotConect, err := FetchClinetNoConnect(db, onlines)
+	if err != nil {
 		log.Fatal(err)
 	}
 	// Send the message to all connected clients
@@ -105,9 +107,9 @@ func Broadcast(db *sql.DB,username string) {
 		temp := make([]string, len(onlines))
 		copy(temp, onlines)
 		jsonData, err := json.Marshal(struct {
-			Online []string
+			Online    []string
 			NotOnline []string
-		}{Online: RemoveUname(temp, uname),NotOnline: ClientNotConect})
+		}{Online: RemoveUname(temp, uname), NotOnline: ClientNotConect})
 		if err != nil {
 			fmt.Println("Error serializing JSON:", err)
 			return
@@ -130,11 +132,10 @@ func FetchClinetNoConnect(db *sql.DB, conectClinet []string) ([]string, error) {
 		placeholders[i] = "?"
 		newArray[i] = conectClinet[i]
 	}
-	
+
 	query := fmt.Sprintf("SELECT username FROM users WHERE username NOT IN (%s);", strings.Join(placeholders, ", "))
 	rows, err := db.Query(query, newArray...)
-	if err != nil{
-		fmt.Println(conectClinet,newArray)
+	if err != nil {
 		return nil, err
 	}
 	var notConetcClinet []string
@@ -153,8 +154,12 @@ func SendMessage(sender, receiver string, data Message) {
 	_, exist := Clients[sender]
 	_, exist2 := Clients[receiver]
 
-	if !exist || !exist2 {
+	if !exist {
 		fmt.Println("error")
+		return
+	}
+	if !exist2 {
+		Clients[sender].WriteJSON(data)
 		return
 	}
 	Clients[sender].WriteJSON(data)
@@ -162,9 +167,9 @@ func SendMessage(sender, receiver string, data Message) {
 }
 
 func StoreMsg(db *sql.DB, sender, receiver, msg string) error {
-	query := `INSERT INTO messages (sender,receiver,msg) VALUES (?,?,?)`
+	query := `INSERT INTO messages (sender,receiver,msg,created_at) VALUES (?,?,?,?)`
 
-	_, err := db.Exec(query, sender, receiver, msg)
+	_, err := db.Exec(query, sender, receiver, msg,time.Now().Format("02-01-2006 15:04:05"))
 	if err != nil {
 		return err
 	}
@@ -197,17 +202,26 @@ func FetchMessages(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 }
 
 func fetchdbMessages(db *sql.DB, sender, receiver string, page float64) ([]Message, error) {
-	rows, _ := db.Query("SELECT sender,receiver,msg FROM messages WHERE (sender = ? AND receiver = ?) OR (receiver = ? AND sender = ?) ORDER BY created_at DESC LIMIT 10 OFFSET ?;", sender, receiver, sender, receiver, page)
+	// rows, _ := db.Query(`
+	// SELECT sender, receiver, msg, 
+      
+	// FROM messages 
+	// WHERE (sender = ? AND receiver = ?) 
+   	// 		OR (receiver = ? AND sender = ?) 
+	// ORDER BY fcreated_at DESC 
+	// LIMIT 10 OFFSET ?;
+	// `, sender, receiver, sender, receiver, page)
+
+	rows, _ := db.Query("SELECT sender,receiver,msg,created_at FROM messages WHERE (sender = ? AND receiver = ?) OR (receiver = ? AND sender = ?) ORDER BY created_at DESC LIMIT 10 OFFSET ?;", sender, receiver, sender, receiver, page)
 	var msgs []Message
 	for rows.Next() {
 		var msg Message
-		err := rows.Scan(&msg.Sender, &msg.Receiver, &msg.Msg)
+		err := rows.Scan(&msg.Sender, &msg.Receiver, &msg.Msg, &msg.Created_at)
 		if err != nil {
 			fmt.Println(err)
 		}
 		msgs = append(msgs, msg)
 	}
-
 	return msgs, nil
 }
 

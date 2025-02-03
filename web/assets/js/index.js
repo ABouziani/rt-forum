@@ -304,14 +304,14 @@ function login() {
         },
         body: formData.toString(),
     })
-        .then(response => {
+        .then(async response => {
             if (response.status === 200) {
 
 
                 writeError(logerror, "green", `Login in successfully, redirect to home page in 2s ...`, 2000);
-                setTimeout(async () => {
-                    document.documentElement.innerHTML = await response.text()
-                }, 2000);
+
+                document.documentElement.innerHTML = await response.text()
+
             } else if (response.status === 302) {
                 writeError(logerror, "green", 'You are already logged in, redirect to home page in 2s...', 2000);
                 setTimeout(async () => {
@@ -375,7 +375,7 @@ async function refetch(request) {
 
     let re = true
     await fetch(request).then(resp => {
-        let redirect = resp.headers.get('Location')== '/login';
+        let redirect = resp.headers.get('Location') == '/login';
         if (resp.ok && !redirect) {
             return resp.text()
 
@@ -387,10 +387,12 @@ async function refetch(request) {
         .then(html => {
             data = true
             let dom = new DOMParser().parseFromString(html, 'text/html')
-            if (document.querySelector('.next') && document.querySelector('.container') && dom.querySelector('.container')) {
+            if (document.querySelector('.container') && dom.querySelector('.container')) {
                 document.querySelector('.container').innerHTML = dom.querySelector('.container').innerHTML
-                document.querySelector('.next').setAttribute('name', request)
-                document.querySelector('.back').setAttribute('name', request)
+                if (document.querySelector('.next')) {
+                    document.querySelector('.next').setAttribute('name', request)
+                    document.querySelector('.back').setAttribute('name', request)
+                }
             }
 
         })

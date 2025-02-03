@@ -17,19 +17,19 @@ function getWebSocket() {
                 console.error("Failed to parse message:", event.data);
                 return; // Exit if JSON parsing fails
             }
+            console.log(data);
 
             // Check if the message has a "Sender" property
             if (data.Online) {
-                console.log(data.Active);
 
                 let chatdiv = document.getElementById('chat-section')
                 chatdiv.innerText = ""
                 for (const uname of data.Online) {
                     if (uname != data.Active) {
                         let a = document.createElement('li')
-                        a.className='chat-section-conect'
+                        a.className = 'user'
                         a.style.cursor = "pointer"
-                        a.innerText = uname
+                        a.innerHTML = `<span class="fa-regular fa-user"></span> <span style="margin-top:5px;" class="status-dot online"></span>${uname}`
                         chatdiv.appendChild(a)
                         a.addEventListener('click', () => {
                             pagee = 0
@@ -40,9 +40,9 @@ function getWebSocket() {
                 for (const uname of data.NotOnline) {
                     if (uname != data.Active) {
                         let a = document.createElement('li')
-                        a.className='chat-section-notconect'
+                        a.className = 'user'
                         a.style.cursor = "pointer"
-                        a.innerText = uname
+                        a.innerHTML = `<span class="fa-regular fa-user"></span> <span style="margin-top:5px;" class="status-dot offline"></span>${uname}`
                         chatdiv.appendChild(a)
                         a.addEventListener('click', () => {
                             pagee = 0
@@ -77,14 +77,12 @@ function getWebSocket() {
 }
 
 
-window.addEventListener("load", getWebSocket);
-
-
 function getChatBox(receiver) {
     if (pagee < 10) {
         document.querySelector('.container').innerHTML = `
+        <p style="margin:auto;" class="currentPage">Conversation</p>
             <div class="chat-container">
-            <div id="receiver">${receiver}</div>
+            <div style="padding-left:20px;padding-bottom:20px;"><span class="fa-regular fa-user"></span><span id="receiver" style="margin-left:10px;">${receiver}</span></div>
             <div onscroll="handleScroll('${receiver}','${pagee}')" class="chat-messages" id="chatMessages">
             
             </div>
@@ -116,7 +114,15 @@ function getChatBox(receiver) {
                     } else {
                         messageElement.className = "message received";
                     }
-                    messageElement.textContent = data[i].msg;
+                    messageElement.innerHTML = `
+        <div class="header">
+        <span style="color:black;font-weight: 700;" class="username">${data[i].Sender}</span>
+        <span style="margin-left:50px;" class="timestamp">${data[i].created_at}</span>
+    </div>
+    <div style="margin-top:15px; text-align: left;" class="content">
+        <span>${data[i].msg}</span>
+    </div>
+        `
                     chatMessages.prepend(messageElement);
                     chatMessages.scrollTop = 100;
                 }
@@ -127,24 +133,30 @@ function getChatBox(receiver) {
 
 
 function addMsg(data) {
-    if (document.querySelector('#receiver')){
+    if (document.querySelector('#receiver')) {
 
         let receiver = document.querySelector('#receiver').innerText
-        console.log(receiver,data.receiver,data.Sender,data.msg);
-        
-        let message = data.msg
+        console.log(receiver);
+
         const chatInput = document.getElementById("chatInput");
         const chatMessages = document.getElementById("chatMessages");
         const messageElement = document.createElement("div");
         if (data.receiver == receiver) {
             messageElement.className = "message sent";
-        } else if (data.Sender == receiver) {
+        } else {
             messageElement.className = "message received";
-        }else {
-            return
         }
-        messageElement.textContent = message;
+        messageElement.innerHTML = `
+        <div class="header">
+        <span style="color:black;font-weight: 700;" class="username">${data.Sender}</span>
+        <span style="margin-left:auto;" class="timestamp">${data.created_at}</span>
+    </div>
+    <div style="margin-top:15px; text-align: left;" class="content">
+        <span>${data.msg}</span>
+    </div>
+        `
         chatMessages.appendChild(messageElement);
+
         chatInput.value = "";
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
@@ -181,3 +193,5 @@ function debounce(fn, delay) {
 }
 
 const trchatbox = debounce(getChatBox, 2000)
+
+ws = getWebSocket()

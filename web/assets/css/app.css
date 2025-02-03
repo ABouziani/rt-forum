@@ -34,12 +34,7 @@ li,.z01forum {
   cursor: pointer;  
 }
 
-.chat-section-conect{
-    color: green;
-}
-.chat-section-notconect{
-    
-}
+
 .currentPage {
     color: var(--color-primary);
     font-size: 35px;
