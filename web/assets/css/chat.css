@@ -29,6 +29,8 @@
   margin: 4px 0;
   /* max-width: 70%; */
   width: max-content;
+  max-width: 500px;
+  word-wrap: break-word;
   font-size: 14px;
   border-radius: 8px;
   padding: 10px;

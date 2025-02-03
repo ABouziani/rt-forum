@@ -200,7 +200,7 @@ function CreatPost() {
 
                 writeError(logerror, "green", 'Post created successfully, redirect to home page in 2s ...', 2000);
                 setTimeout(() => {
-                    window.location.href = '/';
+                    refetch('/')
                 }, 2000);
             } else if (response.status === 401) {
                 refetchLogin("/login")

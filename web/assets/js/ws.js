@@ -116,15 +116,15 @@ function getChatBox(receiver) {
                     }
                     messageElement.innerHTML = `
         <div class="header">
-        <span style="color:black;font-weight: 700;" class="username">${data[i].Sender}</span>
-        <span style="margin-left:50px;" class="timestamp">${data[i].created_at}</span>
+        <span style="margin-right:20px;color:black;font-weight: 700;" class="username">${data[i].Sender}</span>
+        <span class="timestamp">${data[i].created_at}</span>
     </div>
     <div style="margin-top:15px; text-align: left;" class="content">
         <span>${data[i].msg}</span>
     </div>
         `
                     chatMessages.prepend(messageElement);
-                    chatMessages.scrollTop = 100;
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
                 }
             }
 
@@ -148,7 +148,7 @@ function addMsg(data) {
         }
         messageElement.innerHTML = `
         <div class="header">
-        <span style="color:black;font-weight: 700;" class="username">${data.Sender}</span>
+        <span style="margin-right:20px;color:black;font-weight: 700;" class="username">${data.Sender}</span>
         <span style="margin-left:auto;" class="timestamp">${data.created_at}</span>
     </div>
     <div style="margin-top:15px; text-align: left;" class="content">
