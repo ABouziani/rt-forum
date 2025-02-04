@@ -340,7 +340,8 @@ function logout() {
     })
         .then(async response => {
             if (response.status === 200) {
-                document.documentElement.innerHTML = await response.text()
+                // document.documentElement.innerHTML = await response.text()
+                refetchLogin('/logout')
             } else {
                 console.log("errrrrror");
 
@@ -512,9 +513,10 @@ function selectCat(e) {
 }
 
 
-async function refetchLogin(request) {
-    fetch(request).then(resp => resp.text())
-        .then(html => {
-            document.documentElement.innerHTML = html
-        })
-}
+// async function refetchLogin(request) {
+//     fetch(request).then(resp => resp.text())
+//         .then(html => {
+//             document.documentElement.innerHTML = html
+//         })
+        
+// }

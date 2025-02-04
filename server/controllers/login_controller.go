@@ -129,6 +129,5 @@ func Logout(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
-
 	http.Redirect(w, r, "/", http.StatusFound)
 }

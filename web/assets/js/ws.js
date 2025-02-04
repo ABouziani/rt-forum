@@ -20,12 +20,12 @@ function getWebSocket() {
             console.log(data);
 
             // Check if the message has a "Sender" property
-            if (data.Online) {
+            let chatdiv = document.getElementById('chat-section')
+            if (chatdiv && !data.msg) {
 
-                let chatdiv = document.getElementById('chat-section')
                 chatdiv.innerText = ""
-                for (const uname of data.Online) {
-                    if (uname != data.Active) {
+                if (data.Online) {
+                    for (const uname of data.Online) {
                         let a = document.createElement('li')
                         a.className = 'user'
                         a.style.cursor = "pointer"
@@ -37,8 +37,8 @@ function getWebSocket() {
                         })
                     }
                 }
-                for (const uname of data.NotOnline) {
-                    if (uname != data.Active) {
+                if (data.NotOnline){
+                    for (const uname of data.NotOnline) {
                         let a = document.createElement('li')
                         a.className = 'user'
                         a.style.cursor = "pointer"
@@ -53,6 +53,7 @@ function getWebSocket() {
 
             } else if (data.msg) {
                 addMsg(data)
+
             }
         };
 
@@ -195,3 +196,21 @@ function debounce(fn, delay) {
 const trchatbox = debounce(getChatBox, 2000)
 
 ws = getWebSocket()
+async function refetchLogin(request) {
+    if (request == "/logout") {
+        ws.close()
+        ws = getWebSocket()
+        fetch(request,{
+            method: 'POST',
+        }).then(resp => resp.text())
+        .then(html => {
+            document.documentElement.innerHTML = html
+        })
+        return
+    }
+    fetch(request).then(resp => resp.text())
+        .then(html => {
+            document.documentElement.innerHTML = html
+        })
+    console.log(request);
+}

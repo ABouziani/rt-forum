@@ -58,7 +58,7 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	Mu.Lock()
 	Clients[username] = ws
 	Mu.Unlock()
-	Broadcast(db, username)
+	Broadcast(db)
 
 	for {
 		_, msg, err := ws.ReadMessage()
@@ -66,7 +66,7 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			Mu.Lock()
 			delete(Clients, username)
 			Mu.Unlock()
-			Broadcast(db, "")
+			Broadcast(db)
 			break
 		}
 
@@ -90,7 +90,7 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	}
 }
 
-func Broadcast(db *sql.DB, username string) {
+func Broadcast(db *sql.DB) {
 	// Get the next message from the broadcast channel
 	var onlines []string
 	for client := range Clients {
@@ -232,3 +232,4 @@ func RemoveUname(data []string, uname string) []string {
 	}
 	return append(data[:index], data[index+1:]...)
 }
+
