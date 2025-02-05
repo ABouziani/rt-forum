@@ -17,7 +17,6 @@ function getWebSocket() {
                 console.error("Failed to parse message:", event.data);
                 return; // Exit if JSON parsing fails
             }
-            console.log(data);
 
             // Check if the message has a "Sender" property
             let chatdiv = document.getElementById('chat-section')
@@ -26,6 +25,8 @@ function getWebSocket() {
                 chatdiv.innerText = ""
                 if (data.Online) {
                     for (const uname of data.Online) {
+                        console.log(data);
+                        
                         let a = document.createElement('li')
                         a.className = 'user'
                         a.style.cursor = "pointer"
@@ -38,6 +39,8 @@ function getWebSocket() {
                     }
                 }
                 if (data.NotOnline){
+                    console.log(data, chatdiv);
+
                     for (const uname of data.NotOnline) {
                         let a = document.createElement('li')
                         a.className = 'user'
@@ -124,9 +127,10 @@ function getChatBox(receiver) {
         <span>${data[i].msg}</span>
     </div>
         `
-                    chatMessages.prepend(messageElement);
+                    chatMessages.prepend(messageElement);                    
                     chatMessages.scrollTop = chatMessages.scrollHeight;
                 }
+                chatMessages.scrollTop =100
             }
 
         })
@@ -144,8 +148,10 @@ function addMsg(data) {
         const messageElement = document.createElement("div");
         if (data.receiver == receiver) {
             messageElement.className = "message sent";
-        } else {
+        } else if (data.Sender==receiver) {
             messageElement.className = "message received";
+        }else{
+            return
         }
         messageElement.innerHTML = `
         <div class="header">
