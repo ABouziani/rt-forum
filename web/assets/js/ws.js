@@ -24,6 +24,7 @@ function getWebSocket() {
             if (chatdiv && !data.msg && chatdivmobile) {
 
                 chatdiv.innerText = ""
+                chatdivmobile.innerText=""
                 if (data.Online) {
                     for (const uname of data.Online) {
                         
