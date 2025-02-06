@@ -170,7 +170,7 @@ func SendMessage(sender, receiver string, data Message) {
 func StoreMsg(db *sql.DB, sender, receiver, msg string) error {
 	query := `INSERT INTO messages (sender,receiver,msg,created_at) VALUES (?,?,?,?)`
 
-	_, err := db.Exec(query, sender, receiver, msg, time.Now().Format("02-01-2006 15:04:05"))
+	_, err := db.Exec(query, sender, receiver, msg,time.Now().Format("02-01-2006 15:04:05"))
 	if err != nil {
 		return err
 	}
@@ -237,3 +237,4 @@ func RemoveUname(data []string, uname string) []string {
 	}
 	return append(data[:index], data[index+1:]...)
 }
+
