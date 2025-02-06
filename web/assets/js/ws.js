@@ -20,34 +20,45 @@ function getWebSocket() {
 
             // Check if the message has a "Sender" property
             let chatdiv = document.getElementById('chat-section')
-            if (chatdiv && !data.msg) {
+            let chatdivmobile = document.getElementById('chat-mobile')
+            if (chatdiv && !data.msg && chatdivmobile) {
 
                 chatdiv.innerText = ""
                 if (data.Online) {
                     for (const uname of data.Online) {
-                        console.log(data);
                         
                         let a = document.createElement('li')
                         a.className = 'user'
                         a.style.cursor = "pointer"
                         a.innerHTML = `<span class="fa-regular fa-user"></span> <span style="margin-top:5px;" class="status-dot online"></span>${uname}`
-                        chatdiv.appendChild(a)
+                        let b = a.cloneNode(true)
+                        chatdiv.appendChild(b)
+                        chatdivmobile.appendChild(a)
                         a.addEventListener('click', () => {
+                            pagee = 0
+                            getChatBox(uname)
+                        })
+                        b.addEventListener('click',()=>{
                             pagee = 0
                             getChatBox(uname)
                         })
                     }
                 }
                 if (data.NotOnline){
-                    console.log(data, chatdiv);
 
                     for (const uname of data.NotOnline) {
                         let a = document.createElement('li')
                         a.className = 'user'
                         a.style.cursor = "pointer"
                         a.innerHTML = `<span class="fa-regular fa-user"></span> <span style="margin-top:5px;" class="status-dot offline"></span>${uname}`
-                        chatdiv.appendChild(a)
+                        let b = a.cloneNode(true)
+                        chatdivmobile.appendChild(a)
+                        chatdiv.appendChild(b)
                         a.addEventListener('click', () => {
+                            pagee = 0
+                            getChatBox(uname)
+                        })
+                        b.addEventListener('click',()=>{
                             pagee = 0
                             getChatBox(uname)
                         })
@@ -84,6 +95,9 @@ function getWebSocket() {
 function getChatBox(receiver) {
     if (pagee < 10) {
         document.querySelector('.container').innerHTML = `
+        <button class="nav-button" onclick="displayMobileNav()">
+                <i class="fa-solid fa-bars"></i>
+            </button>
         <p style="margin:auto;" class="currentPage">Conversation</p>
             <div class="chat-container">
             <div style="padding-left:20px;padding-bottom:20px;"><span class="fa-regular fa-user"></span><span id="receiver" style="margin-left:10px;">${receiver}</span></div>
