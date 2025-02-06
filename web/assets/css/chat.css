@@ -1,79 +1,166 @@
 .chat-container {
-    margin-top: 40px;
-    width: 95%;
-    height: 500px;
-    background: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 0 5px 1px rgba(0, 0, 0, 0.5);
-    display: flex;
-    flex-direction: column;
-    overflow-y: scroll;
-    min-height: 20vh;
-    padding-top: 65px;
-    margin-left: 20px;
-    /* min-height: 80vh; */
-    margin-bottom: 20px;
-  }
+  margin-top: 40px;
+  width: 95%;
+  height: 500px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 0 5px 1px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  overflow-y: scroll;
+  min-height: 20vh;
+  padding-top: 30px;
+  margin-left: 20px;
+  /* min-height: 80vh; */
+  margin-bottom: 20px;
+}
 
-  .chat-messages {
-    flex: 1;
-    padding: 10px;
-    overflow-y: scroll;
-    height: 2000px;
-    /* max-height: 500px; */
-    border: 1px solid #ccc;
-  }
+.chat-messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: scroll;
+  height: 200px;
+  /* max-height: 500px; */
+  border: 1px solid #ccc;
+}
 
-  .message {
-    margin: 8px 0;
-    padding: 10px 15px;
-    border-radius: 18px;
-    /* max-width: 70%; */
-    width: max-content;
-    font-size: 14px;
-  }
+.message {
+  background-color: rgb(236, 236, 236);
+  margin: 4px 0;
+  /* max-width: 70%; */
+  width: max-content;
+  max-width: 500px;
+  word-wrap: break-word;
+  font-size: 14px;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
 
-  .sent {
-    background-color: #007bff;
-    color: white;
-    margin-left: auto;
-    text-align: right;
-  }
 
-  .received {
-    background-color: #e4e6eb;
-    color: black;
-    margin-right: auto;
-    text-align: left;
-  }
+.timeanduser {
+  margin: 1px 0;
+  padding: 3px 3px;
+  border-radius: 5px;
+  /* max-width: 70%; */
+  width: max-content;
+  font-size: 10px;
+}
 
-  .chat-input {
-    display: flex;
-    border-top: 1px solid #ddd;
-    padding: 10px;
-    background: #f9f9f9;
-  }
 
-  .chat-input input {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 20px;
-    font-size: 14px;
-    outline: none;
-  }
+.sent {
+  background-color: rgb(202, 202, 202);
+  color: black;
+  margin-left: auto;
+  text-align: right;
+}
 
-  .chat-input button {
-    margin-left: 10px;
-    padding: 10px 15px;
-    border: none;
-    background: #007bff;
-    color: white;
-    font-size: 14px;
-    border-radius: 20px;
-    cursor: pointer;
-  }
+.received {
+  background-color: rgb(127, 235, 143);
+  color: black;
+  margin-right: auto;
+  text-align: left;
+}
 
-  .chat-input button:hover {
-    background: #0056b3;
-  }
+.s {
+  background-color: #e2e2e2;
+  color: rgb(0, 0, 0);
+  margin-left: auto;
+  text-align: right;
+}
+
+.r {
+  background-color: #e4e6eb;
+  color: black;
+  margin-right: auto;
+  text-align: left;
+}
+
+.chat-input {
+  display: flex;
+  border-top: 1px solid #ddd;
+  padding: 10px;
+  background: #f9f9f9;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  font-size: 14px;
+  outline: none;
+}
+
+.chat-input button {
+  margin-left: 10px;
+  padding: 10px 15px;
+  border: none;
+  background: #007bff;
+  color: white;
+  font-size: 14px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.chat-input button:hover {
+  background: #0056b3;
+}
+
+/**/
+
+#chat-section {
+  list-style: none;
+  padding: 0;
+  max-width: 300px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  max-height: 200px;
+  overflow-y: scroll;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.user:last-child {
+  border-bottom: none;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.online {
+  background-color: #28a745;
+}
+
+.offline {
+  background-color: #dc3545;
+}
+
+/*new message*/
+.header {
+  display: flex;
+  align-items: center;
+}
+
+.timestamp {
+  margin-left: auto;
+  color: gray
+}
+
+.content {
+  color: rgb(46, 46, 46);
+  margin-top: 5px;
+}

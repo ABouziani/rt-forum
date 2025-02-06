@@ -1,5 +1,5 @@
 window.addEventListener('resize', () => {
-    if (document.body.clientWidth > 600) {
+    if (document.body.clientWidth > 600 && document.querySelector('.mobile-nav')) {
         document.querySelector('.mobile-nav').style.display = 'none';
     }
 })
@@ -21,207 +21,199 @@ const addcomment = throttle(addcomm, 5000)
 let cats = ["", "Technology", "Health", "Travel", "Education", "Entertainment"]
 
 function postreaction(postId, reaction) {
-    const logerror = document.getElementById("errorlogin" + postId)
-    logerror.innerText = ``
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", "/post/postreaction", true);
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-                const response = JSON.parse(xhr.responseText);
-                document.getElementById("likescount" + postId).innerHTML = `<i
-                    class="fa-regular fa-thumbs-up"></i>${response.likesCount}`;
-                document.getElementById("dislikescount" + postId).innerHTML = `<i
-                    class="fa-regular fa-thumbs-down"></i>${response.dislikesCount}`;
-            } else if (xhr.status === 401) {
-                writeError(logerror, "red", `You must login first!`, 1000)
-            } else if (xhr.status === 400) {
-                writeError(logerror, "red", `Bad request!`, 1000)
-            } else if (xhr.status === 500) {
-                writeError(logerror, "red", `Try again later!`, 1000)
+    const logerror = document.getElementById("errorlogin" + postId);
+    logerror.innerText = ``;
+
+    fetch("/post/postreaction", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: `reaction=${reaction}&post_id=${postId}`
+    })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                if (response.status === 401) {
+                    refetchLogin('/login');
+                } else if (response.status === 400) {
+                    writeError(logerror, "red", `Bad request!`, 1000);
+                } else if (response.status === 500) {
+                    writeError(logerror, "red", `Try again later!`, 1000);
+                }
             }
-        };
-    }
-    xhr.send(`reaction=${reaction}&post_id=${postId}`);
+        })
+        .then(data => {
+            if (data) {
+                document.getElementById("likescount" + postId).innerHTML = `<i class="fa-regular fa-thumbs-up"></i>${data.likesCount}`;
+                document.getElementById("dislikescount" + postId).innerHTML = `<i class="fa-regular fa-thumbs-down"></i>${data.dislikesCount}`;
+            }
+        })
+        .catch(error => {
+            console.error(error);
+        });
 }
+
 function commentreaction(commentid, reaction) {
-    const logerror = document.getElementById("commenterrorlogin" + commentid)
-    logerror.innerText = ``
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", "/post/commentreaction", true);
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-                const response = JSON.parse(xhr.responseText);
-                document.getElementById("commentlikescount" + commentid).innerHTML = `<i
-                    class="fa-regular fa-thumbs-up"></i>${response.commentlikesCount}`;
-                document.getElementById("commentdislikescount" + commentid).innerHTML = `<i
-                    class="fa-regular fa-thumbs-down"></i>${response.commentdislikesCount}`;
-            } else if (xhr.status === 401) {
-                writeError(logerror, "red", `You must login first!`, 1000)
+    const logerror = document.getElementById("commenterrorlogin" + commentid);
+    logerror.innerText = ``;
 
-            } else if (xhr.status === 400) {
-                writeError(logerror, "red", `bad request!`, 1000)
-
-            } else if (xhr.status === 500) {
-                writeError(logerror, "red", `Try again later!`, 1000)
+    fetch("/post/commentreaction", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: `reaction=${reaction}&comment_id=${commentid}`
+    })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                if (response.status === 401) {
+                    refetchLogin('/login');
+                } else if (response.status === 400) {
+                    writeError(logerror, "red", `bad request!`, 1000);
+                } else if (response.status === 500) {
+                    writeError(logerror, "red", `Try again later!`, 1000);
+                }
             }
-        };
-    }
-    xhr.send(`reaction=${reaction}&comment_id=${commentid}`);
+        })
+        .then(data => {
+            if (data) {
+                document.getElementById("commentlikescount" + commentid).innerHTML = `<i class="fa-regular fa-thumbs-up"></i>${data.commentlikesCount}`;
+                document.getElementById("commentdislikescount" + commentid).innerHTML = `<i class="fa-regular fa-thumbs-down"></i>${data.commentdislikesCount}`;
+            }
+        })
+        .catch(error => {
+            console.error(error);
+        });
 }
 
 
 function addcomm(postId) {
     const content = document.getElementById("comment-content");
-    const logerror = document.getElementById("errorlogin" + postId)
+    const logerror = document.getElementById("errorlogin" + postId);
+
     if (!content.value) {
-        writeError(logerror, "red", 'Please fill in Comment field.', 3000)
+        writeError(logerror, "red", 'Please fill in Comment field.', 3000);
         return;
     }
 
     if (content.value.length > 500) {
-        writeError(logerror, "red", 'Comment is too long. Please keep it under 500 characters.', 3000)
+        writeError(logerror, "red", 'Comment is too long. Please keep it under 500 characters.', 3000);
         return;
     }
 
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", "/post/addcommentREQ", true);
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-                const response = JSON.parse(xhr.responseText);
-                const comment = document.createElement("div")
-                comment.innerHTML = `
-                 <div class="comment">
-            <div class="comment-header">
-                <p class="comment-user">`+ response.username + `</p>
-                <span></span>
-                <p class="comment-time">`+ response.created_at + ` </p>
-            </div>
-            <div class="comment-body">
-                <p class="comment-content">`+ response.content + ` </p>
-            </div>
-            <div class="comment-footer">
-                <button id="commentlikescount`+ response.ID + `" onclick="commentreaction('` + response.ID + `','like')"
-                    class="comment-like"><i class="fa-regular fa-thumbs-up"></i>`+ response.likes + `</button>
-                <button id="commentdislikescount`+ response.ID + `" onclick="commentreaction('` + response.ID + `','dislike')"
-                    class="comment-dislike"><i class="fa-regular fa-thumbs-down"></i>`+ response.dislikes + `</button>
-            </div>
-            <span style="color:red" id="commenterrorlogin`+ response.ID + `"></span>
-        </div>
-                `
-                document.getElementsByClassName("comments")[0].prepend(comment)
-                document.getElementsByClassName("post-comments")[0].innerHTML = `<i class="fa-regular fa-comment"></i>` + response.commentscount
-                content.value = ""
-            } else if (xhr.status === 400) {
-                writeError(logerror, "red", `Invalid comment!`, 1000)
-            } else if (xhr.status === 401) {
-                writeError(logerror, "red", `You must login first!`, 1000)
+    fetch("/post/addcommentREQ", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: `postid=${postId}&comment=${encodeURIComponent(content.value)}`
+    })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else if (response.status === 400) {
+                writeError(logerror, "red", `Invalid comment!`, 1000);
+            } else if (response.status === 401) {
+                refetchLogin('/login');
             } else {
-                writeError(logerror, "red", `Cannot add comment now, try again later!`, 1000)
-
+                writeError(logerror, "red", `Cannot add comment now, try again later!`, 1000);
             }
-        };
-    }
-    xhr.send(`postid=${postId}&comment=${encodeURIComponent(content.value)}`);
-}
-
-
-
-function giveData() {
-    // const queryString = window.location.search;
-    // const urlParams = new URLSearchParams(queryString);
-    // const path = window.location.pathname
-    // let page = 1
-
-    // if (!isNaN(parseInt(urlParams.get('PageID')))) {
-    //     page = parseInt(urlParams.get('PageID'))
-    // }
-    // fetch(path + "?PageID=" + (PageID + 1)).then(response => {
-    //     if (response.status != 200) {
-    //         document.querySelector(".container").innerHTML=
-    //         const nextbtn = document.querySelector(".next")
-    //         nextbtn.outerHTML = `<a class="next" style="cursor : not-allowed; color : grey;">Next &raquo;</a>`
-    //     }
-    // })
-    refetch(path + "?PageID=" + (PageID + 1))
-
-    if (PageID <= 1) {
-        const backbtn = document.querySelector(".back")
-        backbtn.outerHTML = `<a class="back" style="cursor : not-allowed; color : grey;">&laquo; Back</a>`
-    }
-    document.querySelector(".currentpage").innerText = PageID > 0 ? PageID : 1
+        })
+        .then(response => {
+            if (response) {
+                const comment = document.createElement("div");
+                comment.innerHTML = `
+                <div class="comment">
+                    <div class="comment-header">
+                        <p class="comment-user">${response.username}</p>
+                        <span></span>
+                        <p class="comment-time">${response.created_at}</p>
+                    </div>
+                    <div class="comment-body">
+                        <p class="comment-content">${response.content}</p>
+                    </div>
+                    <div class="comment-footer">
+                        <button id="commentlikescount${response.ID}" onclick="commentreaction('${response.ID}','like')"
+                            class="comment-like"><i class="fa-regular fa-thumbs-up"></i>${response.likes}</button>
+                        <button id="commentdislikescount${response.ID}" onclick="commentreaction('${response.ID}','dislike')"
+                            class="comment-dislike"><i class="fa-regular fa-thumbs-down"></i>${response.dislikes}</button>
+                    </div>
+                    <span style="color:red" id="commenterrorlogin${response.ID}"></span>
+                </div>
+            `;
+                document.getElementsByClassName("comments")[0].prepend(comment);
+                document.getElementsByClassName("post-comments")[0].innerHTML = `<i class="fa-regular fa-comment"></i>${response.commentscount}`;
+                content.value = "";
+            }
+        })
+        .catch(error => {
+            console.error(error);
+        });
 }
 
 
 function CreatPost() {
-    const title = document.querySelector(".create-post-title")
-    const content = document.querySelector(".content")
-    const categories = document.querySelector(".selected-categories")
-    const logerror = document.querySelector(".errorarea")
+    const title = document.querySelector(".create-post-title");
+    const content = document.querySelector(".content");
+    const categories = document.querySelector(".selected-categories");
+    const logerror = document.querySelector(".errorarea");
 
-    if (title.value.trim() == "" || content.value.trim() == "" || categories.childElementCount === 0) {
-        writeError(logerror, "red", 'No empty entries allowed!', 3000)
+    if (title.value.trim() === "" || content.value.trim() === "" || categories.childElementCount === 0) {
+        writeError(logerror, "red", 'No empty entries allowed!', 3000);
         return;
     }
 
     if (title.value.length > 100) {
-        writeError(logerror, "red", 'Title is too long. Please keep it under 100 characters.', 3000)
+        writeError(logerror, "red", 'Title is too long. Please keep it under 100 characters.', 3000);
         return;
     }
 
     if (content.value.length > 3000) {
-        writeError(logerror, "red", 'Content is too long. Please keep it under 3000 characters.', 3000)
+        writeError(logerror, "red", 'Content is too long. Please keep it under 3000 characters.', 3000);
         return;
     }
 
-
-    let cateris = new Array()
+    let cateris = [];
     Array.from(categories.getElementsByTagName('input')).forEach((x) => {
-        cateris.push(x.value)
+        cateris.push(x.value);
+    });
+
+    fetch("/post/createpost", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: `title=${encodeURIComponent(title.value)}&content=${encodeURIComponent(content.value)}&categories=${cateris}`
     })
-    const xml = new XMLHttpRequest();
-    xml.open("POST", "/post/createpost", true)
-    xml.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
+        .then(response => {
+            if (response.ok) {
+                const btn = document.getElementById("create-post-btn");
+                document.getElementById("publish-post-icon").style.display = "none";
+                document.getElementById("publish-post-circle").style.display = "inline-block";
+                btn.disabled = true;
+                btn.style.background = "grey";
+                btn.style.cursor = "not-allowed";
 
-    xml.onreadystatechange = function () {
-        if (xml.readyState === 4) {
-            if (xml.status === 200) {
-                const btn = document.getElementById("create-post-btn")
-                document.getElementById("publish-post-icon").style.display = "none"
-                document.getElementById("publish-post-circle").style.display = "inline-block"
-                btn.disabled = true
-                btn.style.background = "grey"
-                btn.style.cursor = "not-allowed"
-
-
-                writeError(logerror, "green", 'Post created successfully, redirect to home page in 2s ...', 2000)
+                writeError(logerror, "green", 'Post created successfully, redirect to home page in 2s ...', 2000);
                 setTimeout(() => {
-                    window.location.href = '/'
-                }, 2000)
-
-            } else if (xml.status === 401) {
-                writeError(logerror, "red", 'You are loged out, redirect to login page in 2s...', 2000)
-                setTimeout(() => {
-                    window.location.href = '/login'
-                }, 2000)
-
-            } else if (xml.status === 400) {
-                writeError(logerror, "red", 'Bad request!', 1500)
+                    refetch('/')
+                }, 2000);
+            } else if (response.status === 401) {
+                refetchLogin("/login")
+            } else if (response.status === 400) {
+                writeError(logerror, "red", 'Bad request!', 1500);
             } else {
-                writeError(logerror, "red", 'Error: check your entries and try again!', 1500)
+                writeError(logerror, "red", 'Error: check your entries and try again!', 1500);
             }
-        }
-    }
-
-    // Get form data
-    xml.send(`title=${encodeURIComponent(title.value)}&content=${encodeURIComponent(content.value)}&categories=${cateris}`)
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
 }
-
 
 function register() {
     const email = document.querySelector("#email");
@@ -264,7 +256,7 @@ function register() {
             if (response.status === 200) {
                 writeError(logerror, "green", `User ${username.value} created successfully, redirecting to login page in 2s ...`, 2000);
                 setTimeout(async () => {
-                    document.documentElement.innerHTML = await response.text()
+                    refetchLogin('/login')
                 }, 2000);
             } else if (response.status === 302) {
                 writeError(logerror, "green", 'You are already logged in, redirecting to home page in 2s...', 2000);
@@ -279,7 +271,7 @@ function register() {
                 writeError(logerror, "red", 'Cannot create user, try again later!', 1500);
             }
         })
-        .catch(error => {
+        .catch(() => {
             writeError(logerror, "red", 'Network error. Please try again later!', 1500);
         });
 }
@@ -312,14 +304,14 @@ function login() {
         },
         body: formData.toString(),
     })
-        .then(response => {
+        .then(async response => {
             if (response.status === 200) {
 
 
                 writeError(logerror, "green", `Login in successfully, redirect to home page in 2s ...`, 2000);
-                setTimeout(async () => {
-                    document.documentElement.innerHTML = await response.text()
-                }, 2000);
+
+                document.documentElement.innerHTML = await response.text()
+
             } else if (response.status === 302) {
                 writeError(logerror, "green", 'You are already logged in, redirect to home page in 2s...', 2000);
                 setTimeout(async () => {
@@ -335,7 +327,7 @@ function login() {
                 writeError(logerror, "red", 'Cannot log you in now, try again later!', 1500);
             }
         })
-        .catch(error => {
+        .catch(() => {
             writeError(logerror, "red", 'Network error, please try again later!', 1500);
         });
 }
@@ -348,7 +340,8 @@ function logout() {
     })
         .then(async response => {
             if (response.status === 200) {
-                document.documentElement.innerHTML = await response.text()
+                // document.documentElement.innerHTML = await response.text()
+                refetchLogin('/logout')
             } else {
                 console.log("errrrrror");
 
@@ -382,26 +375,35 @@ async function refetch(request) {
 
 
     let re = true
-    await fetch(request).then(resp => {
-        if (resp.ok){
+    await fetch(request,{
+        headers : {
+            'request':'refetch',
+        },
+    }).then(resp => {
+        let redirect = resp.headers.get('Location') == '/login';
+        if (resp.ok && !redirect) {
             return resp.text()
-        } else if(resp.status == 401){
+
+        } else if (resp.status == 401 || redirect) {
             refetchLogin('/login')
+            return
         }
     })
         .then(html => {
             data = true
             let dom = new DOMParser().parseFromString(html, 'text/html')
-            document.querySelector('.container').innerHTML = dom.querySelector('.container').innerHTML
-            if (document.querySelector('.next')) {
-                document.querySelector('.next').setAttribute('name', request)
-                document.querySelector('.back').setAttribute('name', request)
+            if (document.querySelector('.container') && dom.querySelector('.container')) {
+                document.querySelector('.container').innerHTML = dom.querySelector('.container').innerHTML
+                if (document.querySelector('.next')) {
+                    document.querySelector('.next').setAttribute('name', request)
+                    document.querySelector('.back').setAttribute('name', request)
+                }
             }
 
         })
         .catch(err => {
             console.log(err);
-            
+
             data = false
             re = false
         }
@@ -515,9 +517,10 @@ function selectCat(e) {
 }
 
 
-async function refetchLogin(request) {
-    fetch(request).then(resp => resp.text())
-        .then(html => {
-            document.documentElement.innerHTML = html
-        })
-}
+// async function refetchLogin(request) {
+//     fetch(request).then(resp => resp.text())
+//         .then(html => {
+//             document.documentElement.innerHTML = html
+//         })
+        
+// }

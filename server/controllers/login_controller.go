@@ -15,6 +15,11 @@ import (
 )
 
 func GetLoginPage(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+
+	if r.Header.Get("request") != "refetch" {
+		utils.RenderError(db, w, r, 404, false, "")
+		return
+	}
 	if r.Method != http.MethodGet {
 		utils.RenderError(db, w, r, http.StatusMethodNotAllowed, false, "")
 		return
@@ -129,6 +134,5 @@ func Logout(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
-
 	http.Redirect(w, r, "/", http.StatusFound)
 }

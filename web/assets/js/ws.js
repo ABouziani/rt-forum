@@ -17,18 +17,19 @@ function getWebSocket() {
                 console.error("Failed to parse message:", event.data);
                 return; // Exit if JSON parsing fails
             }
+            console.log(data);
 
             // Check if the message has a "Sender" property
-            if (data.Online) {
-                console.log(data.Active);
+            let chatdiv = document.getElementById('chat-section')
+            if (chatdiv && !data.msg) {
 
-                let chatdiv = document.getElementById('chat-section')
                 chatdiv.innerText = ""
-                for (const uname of data.Online) {
-                    if (uname != data.Active) {
+                if (data.Online) {
+                    for (const uname of data.Online) {
                         let a = document.createElement('li')
+                        a.className = 'user'
                         a.style.cursor = "pointer"
-                        a.innerText = uname
+                        a.innerHTML = `<span class="fa-regular fa-user"></span> <span style="margin-top:5px;" class="status-dot online"></span>${uname}`
                         chatdiv.appendChild(a)
                         a.addEventListener('click', () => {
                             pagee = 0
@@ -36,8 +37,23 @@ function getWebSocket() {
                         })
                     }
                 }
+                if (data.NotOnline){
+                    for (const uname of data.NotOnline) {
+                        let a = document.createElement('li')
+                        a.className = 'user'
+                        a.style.cursor = "pointer"
+                        a.innerHTML = `<span class="fa-regular fa-user"></span> <span style="margin-top:5px;" class="status-dot offline"></span>${uname}`
+                        chatdiv.appendChild(a)
+                        a.addEventListener('click', () => {
+                            pagee = 0
+                            getChatBox(uname)
+                        })
+                    }
+                }
+
             } else if (data.msg) {
                 addMsg(data)
+
             }
         };
 
@@ -58,19 +74,16 @@ function getWebSocket() {
         };
     }
 
-    return ws; // Return the same WebSocket instance
+    return ws;
 }
 
-
-window.addEventListener("load", getWebSocket);
-
-{/* <div id="spaces"><br><br><br><br><br><br><br></div> */}
 
 function getChatBox(receiver) {
     if (pagee < 10) {
         document.querySelector('.container').innerHTML = `
+        <p style="margin:auto;" class="currentPage">Conversation</p>
             <div class="chat-container">
-            <div id="receiver">${receiver}</div>
+            <div style="padding-left:20px;padding-bottom:20px;"><span class="fa-regular fa-user"></span><span id="receiver" style="margin-left:10px;">${receiver}</span></div>
             <div onscroll="handleScroll('${receiver}','${pagee}')" class="chat-messages" id="chatMessages">
             
             </div>
@@ -93,7 +106,7 @@ function getChatBox(receiver) {
     })
         .then(resp => resp.json())
         .then(data => {
-            if (data){
+            if (data) {
                 for (let i = 0; i < data.length; i++) {
                     const chatMessages = document.getElementById("chatMessages");
                     const messageElement = document.createElement("div");
@@ -102,57 +115,61 @@ function getChatBox(receiver) {
                     } else {
                         messageElement.className = "message received";
                     }
-                    messageElement.textContent = data[i].msg;
+                    messageElement.innerHTML = `
+        <div class="header">
+        <span style="margin-right:20px;color:black;font-weight: 700;" class="username">${data[i].Sender}</span>
+        <span class="timestamp">${data[i].created_at}</span>
+    </div>
+    <div style="margin-top:15px; text-align: left;" class="content">
+        <span>${data[i].msg}</span>
+    </div>
+        `
                     chatMessages.prepend(messageElement);
-                    chatMessages.scrollTop = 100;
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
                 }
             }
-            
+
         })
 }
 
 
 function addMsg(data) {
-    let receiver = document.querySelector('#receiver').innerText
-    let message = data.msg
-    const chatInput = document.getElementById("chatInput");
-    const chatMessages = document.getElementById("chatMessages");
-    const messageElement = document.createElement("div");
-    if (data.receiver == receiver) {
-        messageElement.className = "message sent";
-    } else {
-        messageElement.className = "message received";
+    if (document.querySelector('#receiver')) {
+
+        let receiver = document.querySelector('#receiver').innerText
+        console.log(receiver);
+
+        const chatInput = document.getElementById("chatInput");
+        const chatMessages = document.getElementById("chatMessages");
+        const messageElement = document.createElement("div");
+        if (data.receiver == receiver) {
+            messageElement.className = "message sent";
+        } else {
+            messageElement.className = "message received";
+        }
+        messageElement.innerHTML = `
+        <div class="header">
+        <span style="margin-right:20px;color:black;font-weight: 700;" class="username">${data.Sender}</span>
+        <span style="margin-left:auto;" class="timestamp">${data.created_at}</span>
+    </div>
+    <div style="margin-top:15px; text-align: left;" class="content">
+        <span>${data.msg}</span>
+    </div>
+        `
+        chatMessages.appendChild(messageElement);
+
+        chatInput.value = "";
+        chatMessages.scrollTop = chatMessages.scrollHeight;
     }
-    messageElement.textContent = message;
-    chatMessages.appendChild(messageElement);
-    chatInput.value = "";
-    chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 function sendMessage(uname) {
     let message = document.querySelector('#chatInput').value
-    // const chatInput = document.getElementById("chatInput");
-    // const chatMessages = document.getElementById("chatMessages");
+
     ws.send(JSON.stringify({
         Receiver: uname,
         Msg: message,
     }))
-    // fetch("/sendmessage", {
-    //     method: "POST",
-    //     header: {
-    //         "Content-Type": "application/json"
-    //     },
-    //     body: ,
-    // }).then(data => {
-    //     if (data.ok) {
-    //         const messageElement = document.createElement("div");
-    //         messageElement.className = "message sent";
-    //         messageElement.textContent = message;
-    //         chatMessages.appendChild(messageElement);
-    //         chatInput.value = "";
-    //         chatMessages.scrollTop = chatMessages.scrollHeight;
-    //     }
-    // })
 }
 
 
@@ -176,4 +193,24 @@ function debounce(fn, delay) {
     };
 }
 
-const trchatbox = debounce(getChatBox,2000)
+const trchatbox = debounce(getChatBox, 2000)
+
+ws = getWebSocket()
+async function refetchLogin(request) {
+    if (request == "/logout") {
+        ws.close()
+        ws = getWebSocket()
+        fetch(request,{
+            method: 'POST',
+        }).then(resp => resp.text())
+        .then(html => {
+            document.documentElement.innerHTML = html
+        })
+        return
+    }
+    fetch(request).then(resp => resp.text())
+        .then(html => {
+            document.documentElement.innerHTML = html
+        })
+    console.log(request);
+}

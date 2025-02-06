@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS messages (
     sender TEXT NOT NULL,
     receiver TEXT NOT NULL,
     msg TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TEXT NOT NULL,
     FOREIGN KEY (sender) REFERENCES users(username) ON DELETE CASCADE,
     FOREIGN KEY (receiver) REFERENCES users(username) ON DELETE CASCADE
 );

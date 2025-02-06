@@ -4,19 +4,24 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"slices"
+	"strings"
 	"sync"
+	"time"
 
 	"forum/server/models"
+	"forum/server/utils"
 
 	"github.com/gorilla/websocket"
 )
 
 type Message struct {
-	Sender   string
-	Receiver string `json:"receiver"`
-	Msg      string `json:"msg"`
+	Sender     string
+	Receiver   string `json:"receiver"`
+	Msg        string `json:"msg"`
+	Created_at string `json:"created_at"`
 }
 
 type OnlineUsers struct {
@@ -24,7 +29,7 @@ type OnlineUsers struct {
 }
 
 type FetchStruct struct {
-	Page interface{}
+	Page     interface{}
 	Receiver string
 }
 
@@ -54,7 +59,7 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	Mu.Lock()
 	Clients[username] = ws
 	Mu.Unlock()
-	Broadcast(username)
+	Broadcast(db)
 
 	for {
 		_, msg, err := ws.ReadMessage()
@@ -62,7 +67,7 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			Mu.Lock()
 			delete(Clients, username)
 			Mu.Unlock()
-			Broadcast("")
+			Broadcast(db)
 			break
 		}
 
@@ -80,36 +85,32 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			fmt.Println(err)
 			return
 		}
-
-		// data, err := json.Marshal(receivedMsg)
-		// if err != nil {
-		// 	fmt.Println("Error serializing JSON:", err)
-		// 	return
-		// }
-
+		receivedMsg.Created_at = time.Now().Format("02-01-06 15:04:05")
 		SendMessage(receivedMsg.Sender, receivedMsg.Receiver, receivedMsg)
 
 	}
 }
 
-func Broadcast(username string) {
+func Broadcast(db *sql.DB) {
 	// Get the next message from the broadcast channel
 	var onlines []string
 	for client := range Clients {
 		onlines = append(onlines, client)
 	}
-
-	
-
+	ClientNotConect, err := FetchClinetNoConnect(db, onlines)
+	if err != nil {
+		log.Fatal(err)
+	}
 	// Send the message to all connected clients
 	Mu.Lock()
-	
+
 	for uname, client := range Clients {
-		var temp = make([]string,len(onlines))
-		copy(temp,onlines)
+		temp := make([]string, len(onlines))
+		copy(temp, onlines)
 		jsonData, err := json.Marshal(struct {
-			Online []string
-		}{Online: RemoveUname(temp,uname)})
+			Online    []string
+			NotOnline []string
+		}{Online: RemoveUname(temp, uname), NotOnline: ClientNotConect})
 		if err != nil {
 			fmt.Println("Error serializing JSON:", err)
 			return
@@ -117,60 +118,59 @@ func Broadcast(username string) {
 		err = client.WriteMessage(websocket.TextMessage, jsonData)
 		if err != nil {
 			fmt.Printf("Error writing to client: %v\n", err)
-			client.Close()         // Close the connection
-			delete(Clients, uname) // Remove the client from the map
+			client.Close()
+			delete(Clients, uname)
 		}
 
 	}
 	Mu.Unlock()
 }
 
-// func getOnlines(username string) {
-// 	fmt.Println(username)
+func FetchClinetNoConnect(db *sql.DB, conectClinet []string) ([]string, error) {
+	placeholders := make([]string, len(conectClinet))
+	newArray := make([]interface{}, len(conectClinet))
+	for i := range conectClinet {
+		placeholders[i] = "?"
+		newArray[i] = conectClinet[i]
+	}
 
-// 	// connectedClients := strconv.Itoa(len(Clients))
-// 	OnlineCh <- OnlineUsers{Online: onlines}
-// }
+	query := fmt.Sprintf("SELECT username FROM users WHERE username NOT IN (%s);", strings.Join(placeholders, ", "))
+	rows, err := db.Query(query, newArray...)
+	if err != nil {
+		return nil, err
+	}
+	var notConetcClinet []string
+	for rows.Next() {
+		var user string
+		err := rows.Scan(&user)
+		if err != nil {
+			return nil, err
+		}
+		notConetcClinet = append(notConetcClinet, user)
+	}
+	return notConetcClinet, nil
+}
 
 func SendMessage(sender, receiver string, data Message) {
 	_, exist := Clients[sender]
 	_, exist2 := Clients[receiver]
 
-	if !exist || !exist2 {
+	if !exist {
 		fmt.Println("error")
 		return
 	}
-
+	if !exist2 {
+		Clients[sender].WriteJSON(data)
+		return
+	}
 	Clients[sender].WriteJSON(data)
 	Clients[receiver].WriteJSON(data)
-	// fmt.Println(string(data))
-	// 	_, username, valid := models.ValidSession(r, db)
-	// 	if r.Method != http.MethodPost {
-	// 		utils.RenderError(db, w, r, http.StatusMethodNotAllowed, valid, username)
-	// 		return
-	// 	}
-	// 	if !valid {
-	// 		w.WriteHeader(401)
-	// 		return
-	// 	}
-	// 	if err := r.ParseForm(); err != nil {
-	// 		w.WriteHeader(400)
-	// 		return
-	// 	}
-
-	// 	resp, err := io.ReadAll(r.Body)
-	// 	if err != nil {
-	// 		fmt.Println("error reading requets body")
-	// 		return
-	// 	}
-
-	// fmt.Println(receivedMsg)
 }
 
 func StoreMsg(db *sql.DB, sender, receiver, msg string) error {
-	query := `INSERT INTO messages (sender,receiver,msg) VALUES (?,?,?)`
+	query := `INSERT INTO messages (sender,receiver,msg,created_at) VALUES (?,?,?,?)`
 
-	_, err := db.Exec(query, sender, receiver, msg)
+	_, err := db.Exec(query, sender, receiver, msg, time.Now().Format("02-01-2006 15:04:05"))
 	if err != nil {
 		return err
 	}
@@ -181,6 +181,10 @@ func StoreMsg(db *sql.DB, sender, receiver, msg string) error {
 func FetchMessages(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	_, sender, valid := models.ValidSession(r, db)
 
+	if r.Method != http.MethodPost {
+		utils.RenderError(db, w, r, http.StatusMethodNotAllowed, valid, sender)
+		return
+	}
 	if !valid {
 		w.WriteHeader(401)
 		return
@@ -192,7 +196,7 @@ func FetchMessages(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	msghistory, err := fetchdbMessages(db, sender, rdata.Receiver,rdata.Page.(float64))
+	msghistory, err := fetchdbMessages(db, sender, rdata.Receiver, rdata.Page.(float64))
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -203,24 +207,33 @@ func FetchMessages(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 }
 
 func fetchdbMessages(db *sql.DB, sender, receiver string, page float64) ([]Message, error) {
-	rows, _ := db.Query("SELECT sender,receiver,msg FROM messages WHERE (sender = ? AND receiver = ?) OR (receiver = ? AND sender = ?) ORDER BY created_at DESC LIMIT 10 OFFSET ?;", sender, receiver, sender, receiver,page)
+	// rows, _ := db.Query(`
+	// SELECT sender, receiver, msg,
+
+	// FROM messages
+	// WHERE (sender = ? AND receiver = ?)
+	// 		OR (receiver = ? AND sender = ?)
+	// ORDER BY fcreated_at DESC
+	// LIMIT 10 OFFSET ?;
+	// `, sender, receiver, sender, receiver, page)
+
+	rows, _ := db.Query("SELECT sender,receiver,msg,created_at FROM messages WHERE (sender = ? AND receiver = ?) OR (receiver = ? AND sender = ?) ORDER BY created_at DESC LIMIT 10 OFFSET ?;", sender, receiver, sender, receiver, page)
 	var msgs []Message
 	for rows.Next() {
 		var msg Message
-		err := rows.Scan(&msg.Sender, &msg.Receiver, &msg.Msg)
+		err := rows.Scan(&msg.Sender, &msg.Receiver, &msg.Msg, &msg.Created_at)
 		if err != nil {
 			fmt.Println(err)
 		}
 		msgs = append(msgs, msg)
 	}
-
 	return msgs, nil
 }
 
 func RemoveUname(data []string, uname string) []string {
-	index := slices.Index(data,uname)
-	if index <=-1{
+	index := slices.Index(data, uname)
+	if index <= -1 {
 		return data
 	}
-	return append(data[:index],data[index+1:]...)
+	return append(data[:index], data[index+1:]...)
 }

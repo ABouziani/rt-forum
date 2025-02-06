@@ -11,6 +11,11 @@ import (
 )
 
 func GetRegisterPage(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+
+	if r.Header.Get("request") != "refetch" {
+		utils.RenderError(db, w, r, 404, false, "")
+		return
+	}
 	if r.Method != http.MethodGet {
 		utils.RenderError(db, w, r, http.StatusMethodNotAllowed, false, "")
 		return
