@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"slices"
 	"strings"
@@ -87,30 +86,32 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		}
 		receivedMsg.Created_at = time.Now().Format("02-01-06 15:04:05")
 		SendMessage(receivedMsg.Sender, receivedMsg.Receiver, receivedMsg)
+		Broadcast(db)
 
 	}
 }
 
 func Broadcast(db *sql.DB) {
 	// Get the next message from the broadcast channel
-	var onlines []string
-	for client := range Clients {
-		onlines = append(onlines, client)
-	}
-	ClientNotConect, err := FetchClinetNoConnect(db, onlines)
-	if err != nil {
-		log.Fatal(err)
-	}
+
 	// Send the message to all connected clients
 	Mu.Lock()
-
 	for uname, client := range Clients {
-		temp := make([]string, len(onlines))
-		copy(temp, onlines)
+		relUsers, noRelUsers := fetchRelated(db, uname)
+		// alphaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+		relUsers = append(relUsers, noRelUsers...)
+
+		for i := 0; i < len(relUsers); i++ {
+			if _, exist := Clients[relUsers[i].Uname]; exist {
+				relUsers[i].Status = "online"
+			} else {
+				relUsers[i].Status = "offline"
+			}
+		}
+
 		jsonData, err := json.Marshal(struct {
-			Online    []string
-			NotOnline []string
-		}{Online: RemoveUname(temp, uname), NotOnline: ClientNotConect})
+			Users []status
+		}{Users: relUsers})
 		if err != nil {
 			fmt.Println("Error serializing JSON:", err)
 			return
@@ -170,7 +171,7 @@ func SendMessage(sender, receiver string, data Message) {
 func StoreMsg(db *sql.DB, sender, receiver, msg string) error {
 	query := `INSERT INTO messages (sender,receiver,msg,created_at) VALUES (?,?,?,?)`
 
-	_, err := db.Exec(query, sender, receiver, msg,time.Now().Format("02-01-2006 15:04:05"))
+	_, err := db.Exec(query, sender, receiver, msg, time.Now().Format("02-01-2006 15:04:05"))
 	if err != nil {
 		return err
 	}
@@ -238,3 +239,74 @@ func RemoveUname(data []string, uname string) []string {
 	return append(data[:index], data[index+1:]...)
 }
 
+type status struct {
+	Status string
+	Uname  string
+}
+
+func fetchRelated(db *sql.DB, username string) ([]status, []status) {
+	rows, err := db.Query(`
+	SELECT 
+    conv.other_user, 
+    m.created_at
+FROM messages m
+JOIN (
+    SELECT 
+        CASE 
+            WHEN sender = ? THEN receiver 
+            ELSE sender 
+        END AS other_user,
+        MAX(created_at) AS last_message_time
+    FROM messages
+    WHERE ? IN (sender, receiver)
+    GROUP BY other_user
+) AS conv 
+ON (conv.other_user = m.sender OR conv.other_user = m.receiver) 
+AND m.created_at = conv.last_message_time
+ORDER BY m.created_at DESC;
+
+	`, username, username)
+	if err != nil {
+		fmt.Println(err)
+	}
+	relUsers := []status{}
+
+	for rows.Next() {
+		var user status
+		v := ""
+		err := rows.Scan(&user.Uname,&v)
+		if err != nil {
+			fmt.Println(err)
+		}
+		relUsers = append(relUsers, user)
+	}
+
+	rows, err = db.Query(`
+	SELECT u.username 
+FROM users u
+WHERE u.username != ?
+AND u.username NOT IN (
+    SELECT DISTINCT 
+        CASE 
+            WHEN m.sender = ? THEN m.receiver 
+            ELSE m.sender 
+        END 
+    FROM messages m
+    WHERE ? IN (m.sender, m.receiver)
+);
+	`, username, username,username)
+	if err != nil {
+		fmt.Println(err)
+	}
+	noRelUsers := []status{}
+	for rows.Next() {
+		var user status
+		err := rows.Scan(&user.Uname)
+		if err != nil {
+			fmt.Println(err)
+		}
+		noRelUsers = append(noRelUsers, user)
+	}
+
+	return relUsers, noRelUsers
+}

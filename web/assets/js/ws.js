@@ -17,7 +17,6 @@ function getWebSocket() {
                 console.error("Failed to parse message:", event.data);
                 return; // Exit if JSON parsing fails
             }
-            console.log(data);
 
             // Check if the message has a "Sender" property
             let chatdiv = document.getElementById('chat-section')
@@ -26,42 +25,23 @@ function getWebSocket() {
 
                 chatdiv.innerText = ""
                 chatdivmobile.innerText = ""
-                if (data.Online) {
-                    for (const uname of data.Online) {
+                if (data.Users) {
+                    for (const user of data.Users) {
 
                         let a = document.createElement('li')
                         a.className = 'user'
                         a.style.cursor = "pointer"
-                        a.innerHTML = `<span class="fa-regular fa-user"></span> <span style="margin-top:5px;" class="status-dot online"></span>${uname}`
+                        a.innerHTML = `<span class="fa-regular fa-user"></span> <span style="margin-top:5px;" class="status-dot ${user.Status}"></span>${user.Uname}`
                         let b = a.cloneNode(true)
                         chatdiv.appendChild(b)
                         chatdivmobile.appendChild(a)
                         a.addEventListener('click', () => {
                             pagee = 0
-                            getChatBox(uname)
+                            getChatBox(user.Uname)
                         })
                         b.addEventListener('click', () => {
                             pagee = 0
-                            getChatBox(uname)
-                        })
-                    }
-                }
-                if (data.NotOnline) {
-                    for (const uname of data.NotOnline) {
-                        let a = document.createElement('li')
-                        a.className = 'user'
-                        a.style.cursor = "pointer"
-                        a.innerHTML = `<span class="fa-regular fa-user"></span> <span style="margin-top:5px;" class="status-dot offline"></span>${uname}`
-                        let b = a.cloneNode(true)
-                        chatdivmobile.appendChild(a)
-                        chatdiv.appendChild(b)
-                        a.addEventListener('click', () => {
-                            pagee = 0
-                            getChatBox(uname)
-                        })
-                        b.addEventListener('click', () => {
-                            pagee = 0
-                            getChatBox(uname)
+                            getChatBox(user.Uname)
                         })
                     }
                 }
