@@ -25,10 +25,10 @@ function getWebSocket() {
             if (chatdiv && !data.msg && chatdivmobile) {
 
                 chatdiv.innerText = ""
-                chatdivmobile.innerText=""
+                chatdivmobile.innerText = ""
                 if (data.Online) {
                     for (const uname of data.Online) {
-                        
+
                         let a = document.createElement('li')
                         a.className = 'user'
                         a.style.cursor = "pointer"
@@ -40,13 +40,13 @@ function getWebSocket() {
                             pagee = 0
                             getChatBox(uname)
                         })
-                        b.addEventListener('click',()=>{
+                        b.addEventListener('click', () => {
                             pagee = 0
                             getChatBox(uname)
                         })
                     }
                 }
-                if (data.NotOnline){
+                if (data.NotOnline) {
                     for (const uname of data.NotOnline) {
                         let a = document.createElement('li')
                         a.className = 'user'
@@ -59,7 +59,7 @@ function getWebSocket() {
                             pagee = 0
                             getChatBox(uname)
                         })
-                        b.addEventListener('click',()=>{
+                        b.addEventListener('click', () => {
                             pagee = 0
                             getChatBox(uname)
                         })
@@ -93,7 +93,7 @@ function getWebSocket() {
 }
 
 
-function getChatBox(receiver) {
+function getChatBox(receiver, s) {
     if (pagee < 10) {
         document.querySelector('.container').innerHTML = `
         <button class="nav-button" onclick="displayMobileNav()">
@@ -142,10 +142,15 @@ function getChatBox(receiver) {
         <span>${data[i].msg}</span>
     </div>
         `
-                    chatMessages.prepend(messageElement);                    
+                    chatMessages.prepend(messageElement);
                     chatMessages.scrollTop = chatMessages.scrollHeight;
                 }
-                chatMessages.scrollTop =100
+                if (s) {
+                    chatMessages.scrollTop = s
+                } else {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+
             }
 
         })
@@ -163,9 +168,9 @@ function addMsg(data) {
         const messageElement = document.createElement("div");
         if (data.receiver == receiver) {
             messageElement.className = "message sent";
-        } else if (data.Sender==receiver) {
+        } else if (data.Sender == receiver) {
             messageElement.className = "message received";
-        }else{
+        } else {
             return
         }
         messageElement.innerHTML = `
@@ -198,7 +203,7 @@ function handleScroll(receiver) {
     const chatMessages = document.getElementById("chatMessages");
     if (chatMessages.scrollTop == 0) {
         pagee += 10
-        trchatbox(receiver, pagee)
+        trchatbox(receiver, 100)
     }
 }
 
@@ -221,12 +226,12 @@ async function refetchLogin(request) {
     if (request == "/logout") {
         ws.close()
         ws = getWebSocket()
-        fetch(request,{
+        fetch(request, {
             method: 'POST',
         }).then(resp => resp.text())
-        .then(html => {
-            document.documentElement.innerHTML = html
-        })
+            .then(html => {
+                document.documentElement.innerHTML = html
+            })
         return
     }
     fetch(request).then(resp => resp.text())

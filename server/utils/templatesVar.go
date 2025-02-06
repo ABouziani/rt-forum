@@ -111,7 +111,7 @@ var HtmlTemplates = map[string]string{
             {{end}}
         </li>
         <li><a><i class="fa-regular fa-star"></i></i>Chat</a></li>
-        <ul id="chat-section">
+        <ul id="chat-mobile">
             
         </ul>
     </ul>
