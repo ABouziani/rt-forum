@@ -9,8 +9,14 @@ CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT UNIQUE NOT NULL,
     username TEXT UNIQUE NOT NULL,
+    age BIGINT NOT NULL,
+    gender TEXT UNIQUE NOT NULL,
+    firstname TEXT UNIQUE NOT NULL,
+    lastname TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    CHECK (gender IN ('male', 'female'))
+    CHECK (age >= 18)
 );
 CREATE TABLE IF NOT EXISTS post_category (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
