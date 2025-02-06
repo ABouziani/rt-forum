@@ -202,21 +202,18 @@ function debounce(fn, delay) {
 const trchatbox = debounce(getChatBox, 2000)
 
 ws = getWebSocket()
+
+
 async function refetchLogin(request) {
     if (request == "/logout") {
         ws.close()
-        ws = getWebSocket()
-        fetch(request, {
-            method: 'POST',
-        }).then(resp => resp.text())
-            .then(html => {
-                document.documentElement.innerHTML = html
-            })
-        return
     }
-    fetch(request).then(resp => resp.text())
+    fetch(request,{
+        headers : {
+            'request':'refetch',
+        },
+    }).then(resp => resp.text())
         .then(html => {
             document.documentElement.innerHTML = html
         })
-    console.log(request);
 }

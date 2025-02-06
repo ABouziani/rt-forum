@@ -341,10 +341,9 @@ function logout() {
         .then(async response => {
             if (response.status === 200) {
                 // document.documentElement.innerHTML = await response.text()
-                refetchLogin('/logout')
+                refetchLogin('/login')
             } else {
                 console.log("errrrrror");
-
             }
         })
         .catch(error => {
