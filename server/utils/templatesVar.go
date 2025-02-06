@@ -72,7 +72,7 @@ var HtmlTemplates = map[string]string{
             {{if .Categories}}
             <ul class="categories-list">
                 {{range .Categories}}
-                <li><a onclick="refetch('/category/{{.ID}}')">#{{.Label}} ({{.PostsCount}})</a></li>
+                <li><a onclick="refetch('/category/{{.ID}}')">#{{.Label}}</a></li>
                 {{end}}
             </ul>
             {{else}}

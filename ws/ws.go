@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -97,9 +98,7 @@ func Broadcast(db *sql.DB) {
 	// Send the message to all connected clients
 	Mu.Lock()
 	for uname, client := range Clients {
-		relUsers, noRelUsers := fetchRelated(db, uname)
-		// alphaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-		relUsers = append(relUsers, noRelUsers...)
+		relUsers := fetchRelated(db, uname)
 
 		for i := 0; i < len(relUsers); i++ {
 			if _, exist := Clients[relUsers[i].Uname]; exist {
@@ -244,7 +243,7 @@ type status struct {
 	Uname  string
 }
 
-func fetchRelated(db *sql.DB, username string) ([]status, []status) {
+func fetchRelated(db *sql.DB, username string) []status {
 	rows, err := db.Query(`
 	SELECT 
     conv.other_user, 
@@ -274,7 +273,7 @@ ORDER BY m.created_at DESC;
 	for rows.Next() {
 		var user status
 		v := ""
-		err := rows.Scan(&user.Uname,&v)
+		err := rows.Scan(&user.Uname, &v)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -294,7 +293,7 @@ AND u.username NOT IN (
     FROM messages m
     WHERE ? IN (m.sender, m.receiver)
 );
-	`, username, username,username)
+	`, username, username, username)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -308,5 +307,11 @@ AND u.username NOT IN (
 		noRelUsers = append(noRelUsers, user)
 	}
 
-	return relUsers, noRelUsers
+	sort.Slice(noRelUsers, func(i, j int) bool {
+		return strings.Compare(noRelUsers[i].Uname, noRelUsers[j].Uname) == -1
+	})
+
+	relUsers = append(relUsers, noRelUsers...)
+
+	return relUsers
 }
