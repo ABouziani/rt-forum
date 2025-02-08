@@ -110,7 +110,7 @@
 
 /**/
 
-#chat-section {
+#chat-section,#chat-mobile {
   list-style: none;
   padding: 0;
   max-width: 300px;
