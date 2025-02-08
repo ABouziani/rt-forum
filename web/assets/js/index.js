@@ -1,3 +1,12 @@
+let lastname;
+let firstname;
+let age;
+let email;
+let passConfirm;
+let password;
+let username;
+let gender;
+
 window.addEventListener('resize', () => {
     if (document.body.clientWidth > 600 && document.querySelector('.mobile-nav')) {
         document.querySelector('.mobile-nav').style.display = 'none';
@@ -216,33 +225,32 @@ function CreatPost() {
 }
 
 function register() {
-    const email = document.querySelector("#email");
-    const username = document.querySelector("#username");
-    const password = document.querySelector("#password");
-    const passConfirm = document.querySelector("#password-confirmation");
-    const logerror = document.querySelector(".errorarea");
+    email = document.querySelector("#email").value;
+    username = document.querySelector("#username").value;
+    password = document.querySelector("#password").value;
+    passConfirm = document.querySelector("#password-confirmation").value;
+    age = document.getElementById('age').value
+    firstname = document.getElementById('firstname').value
+    lastname = document.getElementById('lastname').value
+    gender = document.getElementById('gender').value
+    logerror = document.querySelector(".errorarea");
+    const errmsg = validateForm()
 
-    if (username.value.length < 4 || username.value.includes(" ")) {
-        writeError(logerror, "red", "Username too short! or has space", 1500);
-        return;
-    }
-
-    if (password.value.length < 6) {
-        writeError(logerror, "red", "Password too short!", 1500);
-        return;
-    }
-
-    if (password.value !== passConfirm.value) {
-        writeError(logerror, "red", "Password and password confirmation are not identical", 1500);
+    if (errmsg) {
+        writeError(logerror, "red", errmsg, 1500);
         return;
     }
 
     // Prepare the data to be sent
     const formData = new URLSearchParams();
-    formData.append('email', email.value);
-    formData.append('username', username.value);
-    formData.append('password', password.value);
-    formData.append('password-confirmation', passConfirm.value);
+    formData.append('email', email);
+    formData.append('username', username);
+    formData.append('password', password);
+    formData.append('age', age)
+    formData.append('firstname', firstname)
+    formData.append('lastname', lastname)
+    formData.append('gender', gender)
+    formData.append('password-confirmation', passConfirm);
 
     // Send the request using fetch
     fetch('/signup', {
@@ -340,13 +348,12 @@ function logout() {
     })
         .then(async response => {
             if (response.status === 200) {
-                // document.documentElement.innerHTML = await response.text()
                 refetchLogin('/login')
             } else {
                 console.log("errrrrror");
             }
         })
-        .catch(error => {
+        .catch(() => {
             writeError(logerror, "red", 'Network error, please try again later!', 1500);
         });
 }
@@ -374,9 +381,9 @@ async function refetch(request) {
 
 
     let re = true
-    await fetch(request,{
-        headers : {
-            'request':'refetch',
+    await fetch(request, {
+        headers: {
+            'request': 'refetch',
         },
     }).then(resp => {
         let redirect = resp.headers.get('Location') == '/login';
@@ -439,7 +446,6 @@ async function pagination(dir) {
             PageID = 1
         }
 
-        // const page = +document.querySelector(".currentpage").innerText + 1
         PageID++
         let er = await refetch(`${path}?PageID=${PageID}`)
         if (!er) {
@@ -451,7 +457,6 @@ async function pagination(dir) {
 
     if (dir === "back" && PageID > 1) {
         let path = document.querySelector('.back').name
-        // const page = +document.querySelector(".currentpage").innerText - 1
         let index = path.indexOf('?')
         if (index != -1) {
             path = path.slice(0, index)
@@ -512,14 +517,34 @@ function selectCat(e) {
 
     // Reset the select 
     e.target.selectedIndex = 0;
-
 }
 
+function validateForm() {
+    const emailPattern = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
 
-// async function refetchLogin(request) {
-//     fetch(request).then(resp => resp.text())
-//         .then(html => {
-//             document.documentElement.innerHTML = html
-//         })
-        
-// }
+    if (firstname.trim().length < 4) {
+        return "Firstname must be at least 4 characters long."
+    }
+    if (lastname.trim().length < 4) {
+        return "Lastname must be at least 4 characters long."
+    }
+    if (isNaN(age) || age < 18) {
+        return "Please enter a valid age."
+    }
+    if (gender != "male" && gender != "female") {
+        return "Please select a gender."
+    }
+    if (!emailPattern.test(email)) {
+        return "Please enter a valid email address."
+    }
+    if (username.trim().length < 4) {
+        return "Username must be at least 4 characters long."
+    }
+
+    if (password.length < 6) {
+        return "Password must be at least 6 characters long."
+    }
+    if (password !== passConfirm) {
+        return "Passwords do not match."
+    }
+}

@@ -136,6 +136,9 @@ var HtmlTemplates = map[string]string{
 {{ template "header" . }}
  {{ template "navbar" . }}
 <div class="container">
+    <div class="alert-content">
+        <p id="alert-message"></p>
+    </div>
     <div class="posts">
         <p class="currentPage">Home</p>
         <div class="posts-header">
@@ -215,6 +218,9 @@ var HtmlTemplates = map[string]string{
     {{ template "header" . }}
  {{ template "navbar" . }}
 <div class="container">
+    <div class="alert-content">
+        <p id="alert-message"></p>
+    </div>
     <div class="create-post">
         <h1>Create a New Post</h1>
         <div class="create-post-fields">
@@ -252,6 +258,9 @@ var HtmlTemplates = map[string]string{
     {{ template "header" . }}
  {{ template "navbar" . }}
 <div class="container">
+    <div class="alert-content">
+        <p id="alert-message"></p>
+    </div>
     <div class="post-detail">
         <div class="post">
             <div class="post-body">

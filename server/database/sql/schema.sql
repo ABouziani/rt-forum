@@ -10,9 +10,9 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT UNIQUE NOT NULL,
     username TEXT UNIQUE NOT NULL,
     age BIGINT NOT NULL,
-    gender TEXT UNIQUE NOT NULL,
-    firstname TEXT UNIQUE NOT NULL,
-    lastname TEXT UNIQUE NOT NULL,
+    gender TEXT NOT NULL,
+    firstname TEXT NOT NULL,
+    lastname TEXT NOT NULL,
     password TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     CHECK (gender IN ('male', 'female'))

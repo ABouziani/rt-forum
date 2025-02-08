@@ -76,6 +76,9 @@ function getWebSocket() {
 function getChatBox(receiver, s) {
     if (pagee < 10) {
         document.querySelector('.container').innerHTML = `
+        <div class="alert-content">
+        <p id="alert-message"></p>
+         </div>
         <button class="nav-button" onclick="displayMobileNav()">
                 <i class="fa-solid fa-bars"></i>
             </button>
@@ -141,7 +144,6 @@ function addMsg(data) {
     if (document.querySelector('#receiver')) {
 
         let receiver = document.querySelector('#receiver').innerText
-        console.log(receiver);
 
         const chatInput = document.getElementById("chatInput");
         const chatMessages = document.getElementById("chatMessages");
@@ -151,6 +153,13 @@ function addMsg(data) {
         } else if (data.Sender == receiver) {
             messageElement.className = "message received";
         } else {
+            if (document.getElementById('alert-message') &&  document.querySelector('.alert-content')){                
+                document.getElementById('alert-message').innerText = `${data.Sender} sent you a message`;
+                document.querySelector('.alert-content').style.display = 'flex';
+                setTimeout(() => {
+                    document.querySelector('.alert-content').style.display = 'none';
+                }, 3000);
+            }
             return
         }
         messageElement.innerHTML = `
@@ -166,6 +175,16 @@ function addMsg(data) {
 
         chatInput.value = "";
         chatMessages.scrollTop = chatMessages.scrollHeight;
+    }else if (data.Sender){
+        if (document.getElementById('alert-message') &&  document.querySelector('.alert-content')){
+            console.log("dddddddd");
+            
+            document.getElementById('alert-message').innerText = `${data.Sender} sent you a message`;
+            document.querySelector('.alert-content').style.display = 'flex';
+            setTimeout(() => {
+                document.querySelector('.alert-content').style.display = 'none';
+            }, 3000);
+        } 
     }
 }
 
@@ -208,9 +227,9 @@ async function refetchLogin(request) {
     if (request == "/logout") {
         ws.close()
     }
-    fetch(request,{
-        headers : {
-            'request':'refetch',
+    fetch(request, {
+        headers: {
+            'request': 'refetch',
         },
     }).then(resp => resp.text())
         .then(html => {

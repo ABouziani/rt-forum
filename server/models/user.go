@@ -17,14 +17,14 @@ func GetUserInfo(db *sql.DB, username string) (int, string, error) {
 	return user_id, hashedPassword, nil
 }
 
-func StoreUser(db *sql.DB, email, username, password string) (int64, error) {
+func StoreUser(db *sql.DB, email, username, password ,firstname, lastname, gender string , age int) (int64, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return -1, err
 	}
 
-	query := `INSERT INTO users (email,username,password) VALUES (?,?,?)`
-	result, err := db.Exec(query, email, username, hashedPassword)
+	query := `INSERT INTO users (email,username,password,firstname, lastname, gender, age) VALUES (?,?,?,?,?,?,?)`
+	result, err := db.Exec(query, email, username, hashedPassword,firstname, lastname, gender,age)
 	if err != nil {
 		return -1, fmt.Errorf("%v", err)
 	}

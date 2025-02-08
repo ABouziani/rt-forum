@@ -245,6 +245,21 @@ footer span {
     margin-right: 5px;
 }
 
+/*******************ALERT*******************/
+.alert-content {
+    display: none;
+    position: fixed;
+    background-color: #6e6d6d;
+    color: white;
+    left: 30%; 
+    top: 1%;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 30%; 
+    z-index: 2;
+    text-align: center;
+    border-radius: 8px;
+}
 
 /* ================= medium style  ================== */
 @media screen and (max-width: 1024px) {
