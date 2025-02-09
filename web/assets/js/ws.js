@@ -4,6 +4,7 @@
 var ws; // Store the WebSocket instance
 var pagee = 0;
 function getWebSocket() {
+    
     if (!ws || ws.readyState === WebSocket.CLOSED) {
         ws = new WebSocket("ws://localhost:8080/ws");
 
@@ -224,9 +225,6 @@ ws = getWebSocket()
 
 
 async function refetchLogin(request) {
-    if (request == "/logout") {
-        ws.close()
-    }
     fetch(request, {
         headers: {
             'request': 'refetch',
@@ -235,4 +233,21 @@ async function refetchLogin(request) {
         .then(html => {
             document.documentElement.innerHTML = html
         })
+}
+
+function logout() {
+    ws.close()
+    fetch('/logout', {
+        method: 'POST',
+    })
+        .then(async response => {
+            if (response.status === 200) {
+                refetchLogin('/login')
+            } else {
+                console.log("errrrrror");
+            }
+        })
+        .catch(() => {
+            writeError(logerror, "red", 'Network error, please try again later!', 1500);
+        });
 }
