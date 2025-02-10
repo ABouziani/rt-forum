@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"database/sql"
 	"fmt"
-	"log"
 	"net/http"
 	"text/template"
 
@@ -42,7 +41,6 @@ func ParseTemplates(tmpl string) (*template.Template, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error parsing template files: %w", err)
 	}
-	// t.Execute(os.Stdout, nil)
 
 	return t, nil
 }
@@ -57,7 +55,6 @@ func RenderError(db *sql.DB, w http.ResponseWriter, r *http.Request, statusCode 
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(ErrorPageContents))
-		log.Println(err)
 	}
 }
 

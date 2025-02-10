@@ -160,7 +160,7 @@ var HtmlTemplates = map[string]string{
                     <span></span>
                     <p class="post-time" data-timestamp="{{.CreatedAt}}">{{.CreatedAt}}</p>
                 </div>
-                <p class="post-content" id="post-content-home">{{.Content}} </p>
+                <pre class="post-content" id="post-content-home">{{.Content}} </pre>
                 <div class="post-categories">
                     {{range .Categories}}
                     <span class="post-category">#{{.}}</span>

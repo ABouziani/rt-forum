@@ -15,22 +15,21 @@ import (
 )
 
 func GetLoginPage(w http.ResponseWriter, r *http.Request, db *sql.DB) {
-
-	if r.Header.Get("request") != "refetch" {
-		utils.RenderError(db, w, r, 404, false, "")
-		return
-	}
+	
 	if r.Method != http.MethodGet {
 		utils.RenderError(db, w, r, http.StatusMethodNotAllowed, false, "")
 		return
 	}
 
+	if r.Header.Get("request") != "refetch" {
+		utils.RenderError(db, w, r, 404, false, "")
+		return
+	}
 	var valid bool
 	if _, _, valid = models.ValidSession(r, db); valid {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
-
 	err := utils.RenderTemplate(db, w, r, "login", http.StatusOK, nil, false, "")
 	if err != nil {
 		log.Println(err)

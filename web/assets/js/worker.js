@@ -18,7 +18,6 @@ function connectWebSocket() {
         };
 
         ws.onclose = () => {
-            console.log("WebSocket connection closed. Attempting to reconnect...");
             setTimeout(connectWebSocket, 1000);
         };
     }

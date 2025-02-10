@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"forum/server/controllers"
-	"forum/ws"
 )
 
 func Routes(db *sql.DB) http.Handler {
@@ -20,11 +19,11 @@ func Routes(db *sql.DB) http.Handler {
 	})
 
 	mux.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		ws.HandleWS(w, r, db)
+		controllers.HandleWS(w, r, db)
 	})
 
 	mux.HandleFunc("/fetchmessages", func(w http.ResponseWriter, r *http.Request) {
-		ws.FetchMessages(w, r, db)
+		controllers.FetchMessages(w, r, db)
 	})
 
 	mux.HandleFunc("/category/{id}", func(w http.ResponseWriter, r *http.Request) {

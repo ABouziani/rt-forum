@@ -143,7 +143,7 @@ function addcomm(postId) {
                         <p class="comment-time">${response.created_at}</p>
                     </div>
                     <div class="comment-body">
-                        <p class="comment-content">${response.content}</p>
+                        <pre class="comment-content">${response.content}</pre>
                     </div>
                     <div class="comment-footer">
                         <button id="commentlikescount${response.ID}" onclick="commentreaction('${response.ID}','like')"
@@ -391,9 +391,7 @@ async function refetch(request) {
             }
 
         })
-        .catch(err => {
-            console.log(err);
-
+        .catch(() => {
             data = false
             re = false
         }
@@ -425,7 +423,6 @@ async function pagination(dir) {
         let index = path.indexOf('?')
         if (index != -1) {
             path = path.slice(0, index)
-            console.log(path);
         } else {
             PageID = 1
         }
@@ -444,14 +441,11 @@ async function pagination(dir) {
         let index = path.indexOf('?')
         if (index != -1) {
             path = path.slice(0, index)
-            console.log(path);
         }
         PageID--
-        console.log(path);
 
         refetch(`${path}?PageID=${PageID}`)
     }
-    console.log(PageID);
 }
 
 

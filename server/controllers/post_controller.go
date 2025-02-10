@@ -1,26 +1,20 @@
 package controllers
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"html"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
-	"text/template"
 
-	"forum/server/config"
 	"forum/server/models"
 	"forum/server/utils"
 )
 
 func IndexPosts(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	_, username, valid := models.ValidSession(r, db)
-
-	
 
 	if r.Method != http.MethodGet {
 		utils.RenderError(db, w, r, http.StatusMethodNotAllowed, valid, username)
@@ -42,7 +36,6 @@ func IndexPosts(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	
 	id := r.FormValue("PageID")
 	page, er := strconv.Atoi(id)
 	if er != nil && id != "" {
@@ -74,18 +67,18 @@ func IndexPosts(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 func IndexPostsByCategory(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	_, username, valid := models.ValidSession(r, db)
 
-	if r.Header.Get("request") != "refetch" {
-		utils.RenderError(db, w, r, 404, valid, username)
+	if r.Method != http.MethodGet {
+		utils.RenderError(db, w, r, http.StatusMethodNotAllowed, valid, username)
 		return
 	}
-
+	
 	if !valid {
 		w.WriteHeader(401)
 		return
 	}
 
-	if r.Method != http.MethodGet {
-		utils.RenderError(db, w, r, http.StatusMethodNotAllowed, valid, username)
+	if r.Header.Get("request") != "refetch" {
+		utils.RenderError(db, w, r, 404, valid, username)
 		return
 	}
 
@@ -128,9 +121,9 @@ func IndexPostsByCategory(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 func ShowPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	_, username, valid := models.ValidSession(r, db)
-
-	if r.Header.Get("request") != "refetch" {
-		utils.RenderError(db, w, r, 404, valid, username)
+	
+	if r.Method != http.MethodGet {
+		utils.RenderError(db, w, r, http.StatusMethodNotAllowed, valid, username)
 		return
 	}
 
@@ -139,8 +132,8 @@ func ShowPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	if r.Method != http.MethodGet {
-		utils.RenderError(db, w, r, http.StatusMethodNotAllowed, valid, username)
+	if r.Header.Get("request") != "refetch" {
+		utils.RenderError(db, w, r, 404, valid, username)
 		return
 	}
 
@@ -166,18 +159,17 @@ func ShowPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 func GetPostCreationForm(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	_, username, valid := models.ValidSession(r, db)
 
-	if r.Header.Get("request") != "refetch" {
-		utils.RenderError(db, w, r, 404, valid, username)
-		return
-	}
-
 	if r.Method != http.MethodGet {
 		utils.RenderError(db, w, r, http.StatusMethodNotAllowed, valid, username)
 		return
 	}
-
+	
 	if !valid {
 		w.WriteHeader(401)
+		return
+	}
+	if r.Header.Get("request") != "refetch" {
+		utils.RenderError(db, w, r, 404, valid, username)
 		return
 	}
 
@@ -257,18 +249,18 @@ func CreatePost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 func MyCreatedPosts(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	user_id, username, valid := models.ValidSession(r, db)
 
-	if r.Header.Get("request") != "refetch" {
-		utils.RenderError(db, w, r, 404, valid, username)
-		return
-	}
-
 	if r.Method != http.MethodGet {
 		utils.RenderError(db, w, r, http.StatusMethodNotAllowed, valid, username)
 		return
 	}
-
+	
 	if !valid {
 		w.WriteHeader(401)
+		return
+	}
+
+	if r.Header.Get("request") != "refetch" {
+		utils.RenderError(db, w, r, 404, valid, username)
 		return
 	}
 
@@ -292,7 +284,6 @@ func MyCreatedPosts(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		utils.RenderError(db, w, r, http.StatusBadRequest, valid, username)
 		return
 	}
-	// RenderContainer(db, w, r, "home", statusCode, posts, valid, username)
 	if err := utils.RenderTemplate(db, w, r, "home", statusCode, posts, valid, username); err != nil {
 		log.Println("Error rendering template:", err)
 		utils.RenderError(db, w, r, http.StatusInternalServerError, valid, username)
@@ -303,11 +294,6 @@ func MyCreatedPosts(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 func MyLikedPosts(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	user_id, username, valid := models.ValidSession(r, db)
 
-	if r.Header.Get("request") != "refetch" {
-		utils.RenderError(db, w, r, 404, valid, username)
-		return
-	}
-
 	if r.Method != http.MethodGet {
 		utils.RenderError(db, w, r, http.StatusNotFound, valid, username)
 		return
@@ -315,6 +301,11 @@ func MyLikedPosts(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	if !valid {
 		w.WriteHeader(401)
+		return
+	}
+
+	if r.Header.Get("request") != "refetch" {
+		utils.RenderError(db, w, r, 404, valid, username)
 		return
 	}
 
@@ -381,13 +372,4 @@ func ReactToPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	// Return the new count as JSON
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]int{"likesCount": likeCount, "dislikesCount": dislikeCount})
-}
-
-func RenderContainer(db *sql.DB, w http.ResponseWriter, r *http.Request, tmpl string, statusCode int, data any, isauth bool, username string) {
-	templ, err := template.New("cont").Parse(config.Container)
-	fmt.Println(err)
-	var buf bytes.Buffer
-	err = templ.Execute(&buf, data)
-	fmt.Println(err)
-	fmt.Println(buf.String())
 }

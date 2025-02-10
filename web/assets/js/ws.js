@@ -155,10 +155,10 @@ function addMsg(data) {
 function sendMessage(uname) {
     let message = document.querySelector('#chatInput').value
 
-    if (message == "" || message.length > 100){
-        alert('Check your message and retry!')
-        return
-    }
+    // if (message == "" || message.length > 100){
+    //     alert('Check your message and retry!')
+    //     return
+    // }
 
     worker.port.postMessage(JSON.stringify({
         Receiver: uname,
@@ -217,15 +217,12 @@ async function refetchLogin(request) {
 
 function logout() {
     worker.port.postMessage('kill')
-    // worker.port.close()
     fetch('/logout', {
         method: 'POST',
     })
         .then(async response => {
             if (response.status === 200) {
                 refetchLogin('/login')
-            } else {
-                console.log("errrrrror");
             }
         })
         .catch(() => {
