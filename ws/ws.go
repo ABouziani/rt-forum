@@ -192,7 +192,6 @@ func FetchMessages(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	var rdata FetchStruct
 	if err := json.NewDecoder(r.Body).Decode(&rdata); err != nil {
-		fmt.Println(err)
 		return
 	}
 

@@ -28,6 +28,10 @@ onconnect = (event) => {
     const port = event.ports[0];
     ports.push(port)
     port.onmessage = (msgEvent) => {
+        if (msgEvent.data == 'kill') {
+            ws.close()
+            return
+        }
         if (ws && ws.readyState === WebSocket.OPEN) {
             ws.send(msgEvent.data);
         }

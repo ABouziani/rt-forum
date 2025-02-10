@@ -56,7 +56,7 @@ function getChatBox(receiver, s) {
             </div>
             <div class="chat-input">
               <input type="text" id="chatInput" placeholder="Type your message...">
-              <button onclick="sendMessage('${receiver}')">Send</button>
+              <button onclick="trsendMessage('${receiver}')">Send</button>
             </div>
           </div>
             `
@@ -155,6 +155,11 @@ function addMsg(data) {
 function sendMessage(uname) {
     let message = document.querySelector('#chatInput').value
 
+    if (message == "" || message.length > 100){
+        alert('Check your message and retry!')
+        return
+    }
+
     worker.port.postMessage(JSON.stringify({
         Receiver: uname,
         Msg: message,
@@ -182,13 +187,22 @@ function debounce(fn, delay) {
     };
 }
 
-const trchatbox = debounce(getChatBox, 2000)
 
+function throttle(fn, delay) {
+    let last = 0;
+    return function () {
+        const now = +new Date();
+        if (now - last > delay) {
+            fn.apply(this, arguments);
+            last = now;
+        }
+    };
+}
+
+const trchatbox = debounce(getChatBox, 2000)
+const trsendMessage = throttle(sendMessage,1000)
 
 async function refetchLogin(request) {
-    if (request == "/logout") {
-        worker.port.close()
-    }
     fetch(request,{
         headers : {
             'request':'refetch',
@@ -202,7 +216,8 @@ async function refetchLogin(request) {
 
 
 function logout() {
-    worker.port.close()
+    worker.port.postMessage('kill')
+    // worker.port.close()
     fetch('/logout', {
         method: 'POST',
     })
