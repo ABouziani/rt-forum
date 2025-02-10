@@ -36,7 +36,7 @@ li,.z01forum {
 
 
 .currentPage {
-    color: var(--color-primary);
+    color: rgb(61, 61, 61);
     font-size: 35px;
 }
 

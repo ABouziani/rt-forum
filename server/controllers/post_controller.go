@@ -20,6 +20,17 @@ import (
 func IndexPosts(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	_, username, valid := models.ValidSession(r, db)
 
+	
+
+	if r.Method != http.MethodGet {
+		utils.RenderError(db, w, r, http.StatusMethodNotAllowed, valid, username)
+		return
+	}
+	if r.URL.Path != "/" {
+		utils.RenderError(db, w, r, http.StatusNotFound, valid, username)
+		return
+	}
+
 	if !valid {
 		w.Header().Set("Location", "/login")
 		err := utils.RenderTemplate(db, w, r, "login", http.StatusOK, nil, false, "")
@@ -31,14 +42,7 @@ func IndexPosts(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 
-	if r.Method != http.MethodGet {
-		utils.RenderError(db, w, r, http.StatusMethodNotAllowed, valid, username)
-		return
-	}
-	if r.URL.Path != "/" {
-		utils.RenderError(db, w, r, http.StatusNotFound, valid, username)
-		return
-	}
+	
 	id := r.FormValue("PageID")
 	page, er := strconv.Atoi(id)
 	if er != nil && id != "" {

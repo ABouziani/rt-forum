@@ -198,3 +198,22 @@ async function refetchLogin(request) {
             document.documentElement.innerHTML = html
         })
 }
+
+
+
+function logout() {
+    worker.port.close()
+    fetch('/logout', {
+        method: 'POST',
+    })
+        .then(async response => {
+            if (response.status === 200) {
+                refetchLogin('/login')
+            } else {
+                console.log("errrrrror");
+            }
+        })
+        .catch(() => {
+            writeError(logerror, "red", 'Network error, please try again later!', 1500);
+        });
+}

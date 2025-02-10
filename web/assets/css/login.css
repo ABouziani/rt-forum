@@ -24,6 +24,7 @@
     flex-direction: column;
     justify-content: space-between;
     gap: 10px;
+    margin-top: 20px;
 }
 
 .login-form,
@@ -33,7 +34,7 @@
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
-    gap: 30px;
+    gap: 5px;
     margin: 20px 0;
 }
 

@@ -232,7 +232,7 @@ function register() {
     age = document.getElementById('age').value
     firstname = document.getElementById('firstname').value
     lastname = document.getElementById('lastname').value
-    gender = document.getElementById('gender').value
+    gender = document.querySelector('input[name="gender"]:checked').value;
     logerror = document.querySelector(".errorarea");
     const errmsg = validateForm()
 
@@ -456,16 +456,13 @@ async function pagination(dir) {
 
 
 function selectCat(e) {
-    // Parse the value as JSON to extract id and label
     const selectedValue = JSON.parse(e.target.value);
     const { id, label } = selectedValue;
 
-    // create the elemenet for the category
     const span = document.createElement('span');
     span.textContent = label;
     span.classList.add('selected-category');
 
-    // Add a remove button to the span
     const removeBtn = document.createElement('span');
     removeBtn.textContent = '×';
     removeBtn.classList.add('remove-category');
@@ -515,20 +512,20 @@ function validateForm() {
     if (isNaN(age) || age < 18) {
         return "Please enter a valid age."
     }
-    if (gender != "male" && gender != "female") {
-        return "Please select a gender."
-    }
     if (!emailPattern.test(email)) {
         return "Please enter a valid email address."
     }
     if (username.trim().length < 4) {
         return "Username must be at least 4 characters long."
     }
-
+    
     if (password.length < 6) {
         return "Password must be at least 6 characters long."
     }
     if (password !== passConfirm) {
         return "Passwords do not match."
+    }
+    if (gender != "male" && gender != "female") {
+        return "Please select a gender."
     }
 }

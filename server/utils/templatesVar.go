@@ -270,7 +270,7 @@ var HtmlTemplates = map[string]string{
                     <span></span>
                     <p class="post-time" data-timestamp="{{.Data.Post.CreatedAt}}">{{.Data.Post.CreatedAt}}</p>
                 </div>
-                <p class="post-content">{{.Data.Post.Content}} </p>
+                <pre class="post-content">{{.Data.Post.Content}} </pre>
                 <div class="post-categories">
                     {{range .Data.Post.Categories}}
                     <span class="post-category">#{{.}}</span>
@@ -304,7 +304,7 @@ var HtmlTemplates = map[string]string{
                     <p class="comment-time" data-timestamp="{{.CreatedAt}}">{{.CreatedAt}}</p>
                 </div>
                 <div class="comment-body">
-                    <p class="comment-content">{{.Content}} </p>
+                    <pre class="comment-content">{{.Content}} </pre>
                 </div>
                 <div class="comment-footer">
                     <button id="commentlikescount{{.ID}}" onclick="commentreaction('{{.ID}}','like')"
@@ -330,11 +330,16 @@ var HtmlTemplates = map[string]string{
             <input id="firstname" type="text" name="firstname" class="register-input" placeholder="First Name">
             <input id="lastname" type="text" name="lastname" class="register-input" placeholder="Last Name">
             <input id="age" type="text" name="age" class="register-input" placeholder="Age (>=18)">
-            <input id="gender" type="text" name="gender" class="register-input">
             <input id="email" type="text" name="email" class="register-input" placeholder="email ">
             <input id="username" type="text" name="username" class="register-input" placeholder="username">
             <input id="password" type="password" name="password" class="register-input" placeholder="********">
             <input id="password-confirmation" type="password" name="password-confirmation" class="register-input" placeholder="********">
+            <div id="gender" >
+                <input id="male" type="radio" name="gender" checked value="male">
+                <label for="male">Male</label>
+                <input id="female" type="radio" name="gender" value="female">
+                <label for="female">Female</label>
+            </div>
             <div class="errorarea"></div>
             <button onclick="register()" type="submit" class="register-submit">Register<i class="fa-solid fa-user-plus"></i></button>
         </div>
