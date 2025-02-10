@@ -1,85 +1,50 @@
-
-
-
-var ws; // Store the WebSocket instance
 var pagee = 0;
-function getWebSocket() {
-    
-    if (!ws || ws.readyState === WebSocket.CLOSED) {
-        ws = new WebSocket("ws://localhost:8080/ws");
+var worker = new SharedWorker('/assets/js/worker.js');
+worker.port.start();
 
-        // Handle incoming messages
-        ws.onmessage = (event) => {
-            let data;
-            try {
-                // Parse the incoming JSON message
-                data = JSON.parse(event.data);
-            } catch (e) {
-                console.error("Failed to parse message:", event.data);
-                return; // Exit if JSON parsing fails
-            }
-
-            // Check if the message has a "Sender" property
-            let chatdiv = document.getElementById('chat-section')
-            let chatdivmobile = document.getElementById('chat-mobile')
-            if (chatdiv && !data.msg && chatdivmobile) {
-
-                chatdiv.innerText = ""
-                chatdivmobile.innerText = ""
-                if (data.Users) {
-                    for (const user of data.Users) {
-
-                        let a = document.createElement('li')
-                        a.className = 'user'
-                        a.style.cursor = "pointer"
-                        a.innerHTML = `<span class="fa-regular fa-user"></span> <span style="margin-top:5px;" class="status-dot ${user.Status}"></span>${user.Uname}`
-                        let b = a.cloneNode(true)
-                        chatdiv.appendChild(b)
-                        chatdivmobile.appendChild(a)
-                        a.addEventListener('click', () => {
-                            pagee = 0
-                            getChatBox(user.Uname)
-                        })
-                        b.addEventListener('click', () => {
-                            pagee = 0
-                            getChatBox(user.Uname)
-                        })
-                    }
-                }
-
-            } else if (data.msg) {
-                addMsg(data)
-
-            }
-        };
-
-        // Handle errors
-        ws.onerror = (error) => {
-            console.error("WebSocket error:", error);
-        };
-
-        // Handle connection close and attempt reconnection
-        ws.onclose = () => {
-            console.log("WebSocket connection closed. Attempting to reconnect...");
-            setTimeout(getWebSocket, 1000); // Reconnect after 1 second
-        };
-
-        // Log successful connection
-        ws.onopen = () => {
-            console.log("WebSocket connection established.");
-        };
+worker.port.onmessage = (event) => {
+    let data;
+    try {
+        data = JSON.parse(event.data);
+    } catch (e) {
+        console.error("Failed to parse message:", event.data);
+        return;
     }
 
-    return ws;
-}
+    let chatdiv = document.getElementById('chat-section');
+    let chatdivmobile = document.getElementById('chat-mobile');
+    if (chatdiv && !data.msg && chatdivmobile) {
+        chatdiv.innerText = "";
+        chatdivmobile.innerText = "";
+        if (data.Users) {
+            for (const user of data.Users) {
+                let a = document.createElement('li');
+                a.className = 'user';
+                a.style.cursor = "pointer";
+                a.innerHTML = `<span class="fa-regular fa-user"></span> <span style="margin-top:5px;" class="status-dot ${user.Status}"></span>${user.Uname}`;
+                let b = a.cloneNode(true);
+                chatdiv.appendChild(b);
+                chatdivmobile.appendChild(a);
+                a.addEventListener('click', () => {
+                    pagee = 0;
+                    getChatBox(user.Uname);
+                });
+                b.addEventListener('click', () => {
+                    pagee = 0;
+                    getChatBox(user.Uname);
+                });
+            }
+        }
+    } else if (data.msg) {
+        addMsg(data);
+    }
+};
 
+worker.port.postMessage('helooo')
 
 function getChatBox(receiver, s) {
     if (pagee < 10) {
         document.querySelector('.container').innerHTML = `
-        <div class="alert-content">
-        <p id="alert-message"></p>
-         </div>
         <button class="nav-button" onclick="displayMobileNav()">
                 <i class="fa-solid fa-bars"></i>
             </button>
@@ -177,9 +142,7 @@ function addMsg(data) {
         chatInput.value = "";
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }else if (data.Sender){
-        if (document.getElementById('alert-message') &&  document.querySelector('.alert-content')){
-            console.log("dddddddd");
-            
+        if (document.getElementById('alert-message') &&  document.querySelector('.alert-content')){            
             document.getElementById('alert-message').innerText = `${data.Sender} sent you a message`;
             document.querySelector('.alert-content').style.display = 'flex';
             setTimeout(() => {
@@ -192,7 +155,7 @@ function addMsg(data) {
 function sendMessage(uname) {
     let message = document.querySelector('#chatInput').value
 
-    ws.send(JSON.stringify({
+    worker.port.postMessage(JSON.stringify({
         Receiver: uname,
         Msg: message,
     }))
@@ -221,33 +184,17 @@ function debounce(fn, delay) {
 
 const trchatbox = debounce(getChatBox, 2000)
 
-ws = getWebSocket()
-
 
 async function refetchLogin(request) {
-    fetch(request, {
-        headers: {
-            'request': 'refetch',
+    if (request == "/logout") {
+        worker.port.close()
+    }
+    fetch(request,{
+        headers : {
+            'request':'refetch',
         },
     }).then(resp => resp.text())
         .then(html => {
             document.documentElement.innerHTML = html
         })
-}
-
-function logout() {
-    ws.close()
-    fetch('/logout', {
-        method: 'POST',
-    })
-        .then(async response => {
-            if (response.status === 200) {
-                refetchLogin('/login')
-            } else {
-                console.log("errrrrror");
-            }
-        })
-        .catch(() => {
-            writeError(logerror, "red", 'Network error, please try again later!', 1500);
-        });
 }
