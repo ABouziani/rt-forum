@@ -119,13 +119,7 @@ function addMsg(data) {
         } else if (data.Sender == receiver) {
             messageElement.className = "message received";
         } else {
-            if (document.getElementById('alert-message') &&  document.querySelector('.alert-content')){                
-                document.getElementById('alert-message').innerText = `${data.Sender} sent you a message`;
-                document.querySelector('.alert-content').style.display = 'flex';
-                setTimeout(() => {
-                    document.querySelector('.alert-content').style.display = 'none';
-                }, 3000);
-            }
+            alert(`${data.Sender} sent you a message`)
             return
         }
         messageElement.innerHTML = `
@@ -142,23 +136,17 @@ function addMsg(data) {
         chatInput.value = "";
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }else if (data.Sender){
-        if (document.getElementById('alert-message') &&  document.querySelector('.alert-content')){            
-            document.getElementById('alert-message').innerText = `${data.Sender} sent you a message`;
-            document.querySelector('.alert-content').style.display = 'flex';
-            setTimeout(() => {
-                document.querySelector('.alert-content').style.display = 'none';
-            }, 3000);
-        } 
+        alert(`${data.Sender} sent you a message`)
     }
 }
 
 function sendMessage(uname) {
     let message = document.querySelector('#chatInput').value
 
-    // if (message == "" || message.length > 100){
-    //     alert('Check your message and retry!')
-    //     return
-    // }
+    if (message == "" || message.length > 100){
+        alert('Check your message and retry!')
+        return
+    }
 
     worker.port.postMessage(JSON.stringify({
         Receiver: uname,

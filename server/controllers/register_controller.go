@@ -43,11 +43,6 @@ func Signup(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		return
 	}
 	
-	if r.Header.Get("request") != "refetch" {
-		utils.RenderError(db, w, r, 404, false, "")
-		return
-	}
-
 	var valid bool
 	if _, _, valid = models.ValidSession(r, db); valid {
 		w.WriteHeader(302)

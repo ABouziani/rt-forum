@@ -4,11 +4,15 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"forum/server/models"
 	"forum/server/utils"
+
+	"github.com/gorilla/websocket"
 )
 
 func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
@@ -18,8 +22,9 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		w.WriteHeader(401)
 		return
 	}
-
-	ws, err := models.Upgrader.Upgrade(w, r, nil)
+	var err error
+	var ws *websocket.Conn
+	ws, err = models.Upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return
 	}
@@ -28,33 +33,59 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	models.Mu.Lock()
 	models.Clients[username] = ws
 	models.Mu.Unlock()
-	Broadcast(db)
+	err = Broadcast(db)
+	if err != nil{
+		utils.RenderError(db, w, r, http.StatusInternalServerError, valid, username)
+	}
 
 	for {
 		var receivedMsg models.Message
-		err := ws.ReadJSON(&receivedMsg)
-		if receivedMsg.Msg=="" || len(receivedMsg.Msg)>100{
-			w.WriteHeader(400)
-			continue
-		}
+		err = ws.ReadJSON(&receivedMsg)
 		if err != nil {
 			models.Mu.Lock()
 			delete(models.Clients, username)
 			models.Mu.Unlock()
-			Broadcast(db)
-			break
+			err = Broadcast(db)
+			if err != nil{
+				utils.RenderError(db, w, r, http.StatusInternalServerError, valid, username)
+			}			
+			return
+		}
+		if strings.TrimSpace(receivedMsg.Msg) == "" || len(strings.TrimSpace(receivedMsg.Msg)) > 100 {
+			log.Println("Invalid message")
+			continue
 		}
 
 		receivedMsg.Sender = username
 
 		err = models.StoreMsg(db, receivedMsg.Sender, receivedMsg.Receiver, receivedMsg.Msg)
 		if err != nil {
+			models.Mu.Lock()
+			delete(models.Clients, username)
+			models.Mu.Unlock()
+			err = Broadcast(db)
+			if err != nil{
+				utils.RenderError(db, w, r, http.StatusInternalServerError, valid, username)
+			}			
+			utils.RenderError(db, w, r, http.StatusInternalServerError, valid, username)
 			return
 		}
 		receivedMsg.Created_at = time.Now().Format("02-01-06 15:04:05")
-		SendMessage(receivedMsg.Sender, receivedMsg.Receiver, receivedMsg)
-		Broadcast(db)
-
+		err = SendMessage(receivedMsg.Sender, receivedMsg.Receiver, receivedMsg)
+		if err != nil {
+			models.Mu.Lock()
+			delete(models.Clients, username)
+			models.Mu.Unlock()
+			err = Broadcast(db)
+			if err != nil{
+				utils.RenderError(db, w, r, http.StatusInternalServerError, valid, username)
+			}			
+			return
+		}
+		err = Broadcast(db)
+		if err != nil{
+			utils.RenderError(db, w, r, http.StatusInternalServerError, valid, username)
+		}
 	}
 }
 
@@ -88,19 +119,29 @@ func Broadcast(db *sql.DB) error {
 	return nil
 }
 
-func SendMessage(sender, receiver string, data models.Message) {
+func SendMessage(sender, receiver string, data models.Message) error {
 	_, exist := models.Clients[sender]
 	_, exist2 := models.Clients[receiver]
-
+	var err error
 	if !exist {
-		return
+		return fmt.Errorf("not exist")
 	}
 	if !exist2 {
-		models.Clients[sender].WriteJSON(data)
-		return
+		err = models.Clients[sender].WriteJSON(data)
+		if err != nil {
+			return err
+		}
+		return nil
 	}
-	models.Clients[sender].WriteJSON(data)
-	models.Clients[receiver].WriteJSON(data)
+	err = models.Clients[sender].WriteJSON(data)
+	if err != nil {
+		return err
+	}
+	err = models.Clients[receiver].WriteJSON(data)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func FetchMessages(w http.ResponseWriter, r *http.Request, db *sql.DB) {

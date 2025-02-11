@@ -22,7 +22,9 @@
 }
 
 
-
+.errorarea{
+    margin: 20px;
+}
 /* Global style */
 
 * {

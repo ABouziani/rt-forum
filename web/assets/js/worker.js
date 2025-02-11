@@ -3,24 +3,22 @@ let ports = [];
 
 
 function connectWebSocket() {
-    if (!ws || ws.readyState === WebSocket.CLOSED) {
-        ws = new WebSocket("ws://localhost:8080/ws");
+    ws = new WebSocket("ws://localhost:8080/ws");
 
-        ws.onmessage = (event) => {
-            ports.forEach(port => {
-                port.postMessage(event.data);
-            })
-            
-        };
+    ws.onmessage = (event) => {
+        ports.forEach(port => {
+            port.postMessage(event.data);
+        })
 
-        ws.onerror = (error) => {
-            console.error("WebSocket error:", error);
-        };
+    };
 
-        ws.onclose = () => {
-            setTimeout(connectWebSocket, 1000);
-        };
-    }
+    ws.onerror = (error) => {
+        console.error("WebSocket error:", error);
+    };
+
+    ws.onclose = () => {
+        setTimeout(connectWebSocket, 1000);
+    };
 }
 
 onconnect = (event) => {
@@ -35,5 +33,7 @@ onconnect = (event) => {
             ws.send(msgEvent.data);
         }
     };
-    connectWebSocket();
+    if ((!ws || ws.readyState === WebSocket.CLOSED)) {
+        connectWebSocket();
+    }
 };

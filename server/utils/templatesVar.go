@@ -131,71 +131,6 @@ var HtmlTemplates = map[string]string{
 
 `,
 
-	"home": `
-
-{{ template "header" . }}
- {{ template "navbar" . }}
-<div class="container">
-    <div class="alert-content">
-        <p id="alert-message"></p>
-    </div>
-    <div class="posts">
-        <p class="currentPage">Home</p>
-        <div class="posts-header">
-            <button class="nav-button" onclick="displayMobileNav()">
-                <i class="fa-solid fa-bars"></i>
-            </button>
-            <a onclick="refetch('/post/create')" class="create-post-link">
-                <i class="fa-solid fa-plus"></i>
-                Create post
-            </a>
-        </div>
-        {{if .Data}}
-        {{range .Data}}
-        <div class="post">
-            <div class="post-body">
-                <a onclick="refetch('/post/{{.ID}}')" style="cursor: pointer;" class="post-title">{{.Title}}</a>
-                <div class="post-header">
-                    <p class="post-user">{{.UserName}} </p>
-                    <span></span>
-                    <p class="post-time" data-timestamp="{{.CreatedAt}}">{{.CreatedAt}}</p>
-                </div>
-                <pre class="post-content" id="post-content-home">{{.Content}} </pre>
-                <div class="post-categories">
-                    {{range .Categories}}
-                    <span class="post-category">#{{.}}</span>
-                    {{end}}
-                </div>
-            </div>
-            <div class="post-footer">
-                <button id="likescount{{.ID}}" onclick="postreaction('{{.ID}}','like')"
-                    class="post-like post-footer-hover"><i class="fa-regular fa-thumbs-up"></i>{{.Likes}}</button>
-                <button id="dislikescount{{.ID}}" onclick="postreaction('{{.ID}}','dislike')"
-                    class="post-dislike post-footer-hover"><i
-                        class="fa-regular fa-thumbs-down"></i>{{.Dislikes}}</button>
-                <a onclick="refetch('/post/{{.ID}}')" class="post-comments post-footer-hover">
-                    <i class="fa-regular fa-comment"></i>{{.Comments}}
-                </a>
-            </div>
-            <span style="color:red" id="errorlogin{{.ID}}"></span>
-        </div>
-        {{end}}
-        {{else}}
-        <p class="no-posts">No posts available to display !</p>
-        {{end}}
-    </div>
-    <div class="pagination">
-        <a onclick="pagination('back', '{{if .Data}}true{{end}}')"  class="back" name="/">&laquo;
-            Back</a>
-        <span class="currentpage">1</span>
-        <a onclick="pagination('next', '{{if .Data}}true{{end}}')" class="next" name="/">Next
-            &raquo;</a>
-    </div>
-</div>
-</div>
-{{ template "footer" }}
-`,
-
 	"login": `
     {{ template "header" . }}
 <div class="login-page">
@@ -218,9 +153,6 @@ var HtmlTemplates = map[string]string{
     {{ template "header" . }}
  {{ template "navbar" . }}
 <div class="container">
-    <div class="alert-content">
-        <p id="alert-message"></p>
-    </div>
     <div class="create-post">
         <h1>Create a New Post</h1>
         <div class="create-post-fields">
@@ -258,9 +190,6 @@ var HtmlTemplates = map[string]string{
     {{ template "header" . }}
  {{ template "navbar" . }}
 <div class="container">
-    <div class="alert-content">
-        <p id="alert-message"></p>
-    </div>
     <div class="post-detail">
         <div class="post">
             <div class="post-body">

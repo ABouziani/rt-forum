@@ -314,10 +314,7 @@ function login() {
     })
         .then(async response => {
             if (response.status === 200) {
-
-
                 writeError(logerror, "green", `Login in successfully, redirect to home page in 2s ...`, 2000);
-
                 document.documentElement.innerHTML = await response.text()
 
             } else if (response.status === 302) {
@@ -397,19 +394,21 @@ async function refetch(request) {
         }
 
         )
-    switch (true) {
-        case request.includes("/category"):
-            document.querySelector('.currentPage').innerText = cats[request[10]];
-            break;
-        case request.includes("mycreatedposts"):
-            document.querySelector('.currentPage').innerText = "My Posts";
-            break;
-        case request.includes("mylikedposts"):
-            document.querySelector('.currentPage').innerText = "My Liked Posts";
-            break;
-        default:
-            document.querySelector('.currentPage').innerText = "Home";
-            break;
+    if (document.querySelector('.currentPage')) {
+        switch (true) {
+            case request.includes("/category"):
+                document.querySelector('.currentPage').innerText = cats[request[10]];
+                break;
+            case request.includes("mycreatedposts"):
+                document.querySelector('.currentPage').innerText = "My Posts";
+                break;
+            case request.includes("mylikedposts"):
+                document.querySelector('.currentPage').innerText = "My Liked Posts";
+                break;
+            default:
+                document.querySelector('.currentPage').innerText = "Home";
+                break;
+        }
     }
     return re
 }
@@ -512,7 +511,7 @@ function validateForm() {
     if (username.trim().length < 4) {
         return "Username must be at least 4 characters long."
     }
-    
+
     if (password.length < 6) {
         return "Password must be at least 6 characters long."
     }

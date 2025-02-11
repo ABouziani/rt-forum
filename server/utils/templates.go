@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"text/template"
 
+	"forum/server/config"
 	"forum/server/models"
 )
 
@@ -25,7 +26,13 @@ type Error struct {
 
 func ParseTemplates(tmpl string) (*template.Template, error) {
 	// Parse the template files
-	t, err := template.New(tmpl).Parse(HtmlTemplates[tmpl])
+	var t *template.Template
+	var err error
+	if tmpl == "home" {
+		t, err = template.ParseFiles(config.BasePath + "web/template/home.html")
+	} else {
+		t, err = template.New(tmpl).Parse(HtmlTemplates[tmpl])
+	}
 	if err != nil {
 		return nil, fmt.Errorf("error parsing template files: %w", err)
 	}
@@ -41,7 +48,6 @@ func ParseTemplates(tmpl string) (*template.Template, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error parsing template files: %w", err)
 	}
-
 	return t, nil
 }
 
@@ -82,10 +88,12 @@ func RenderTemplate(db *sql.DB, w http.ResponseWriter, r *http.Request, tmpl str
 
 	var buf bytes.Buffer
 	// Execute the template with the provided data
-
+	if tmpl=="home"{
+		tmpl= "home.html"
+	}
 	err = t.ExecuteTemplate(&buf, tmpl, globalData)
 	if err != nil {
-		return fmt.Errorf("error executing template: %w", err)
+		return err
 	}
 	w.Header().Set("Content-Type", "text/html")
 	buf.WriteTo(w)

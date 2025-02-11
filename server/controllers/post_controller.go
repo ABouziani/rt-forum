@@ -46,6 +46,7 @@ func IndexPosts(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	if page < 0 {
 		page = 0
 	}
+
 	posts, statusCode, err := models.FetchPosts(db, page)
 	if err != nil {
 		log.Println("Error fetching posts:", err)
@@ -71,7 +72,7 @@ func IndexPostsByCategory(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		utils.RenderError(db, w, r, http.StatusMethodNotAllowed, valid, username)
 		return
 	}
-	
+
 	if !valid {
 		w.WriteHeader(401)
 		return
@@ -121,7 +122,7 @@ func IndexPostsByCategory(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 func ShowPost(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	_, username, valid := models.ValidSession(r, db)
-	
+
 	if r.Method != http.MethodGet {
 		utils.RenderError(db, w, r, http.StatusMethodNotAllowed, valid, username)
 		return
@@ -163,7 +164,7 @@ func GetPostCreationForm(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		utils.RenderError(db, w, r, http.StatusMethodNotAllowed, valid, username)
 		return
 	}
-	
+
 	if !valid {
 		w.WriteHeader(401)
 		return
@@ -253,7 +254,7 @@ func MyCreatedPosts(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		utils.RenderError(db, w, r, http.StatusMethodNotAllowed, valid, username)
 		return
 	}
-	
+
 	if !valid {
 		w.WriteHeader(401)
 		return
