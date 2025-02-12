@@ -262,7 +262,7 @@ function register() {
     })
         .then(response => {
             if (response.status === 200) {
-                writeError(logerror, "green", `User ${username.value} created successfully, redirecting to login page in 2s ...`, 2000);
+                writeError(logerror, "green", `User ${username.value} created successfully, redirecting to login page in 2s ...`, 2000);                
                 setTimeout(async () => {
                     refetchLogin('/login')
                 }, 2000);
@@ -314,14 +314,9 @@ function login() {
     })
         .then(async response => {
             if (response.status === 200) {
-                writeError(logerror, "green", `Login in successfully, redirect to home page in 2s ...`, 2000);
+                worker.port.postMessage('login')
                 document.documentElement.innerHTML = await response.text()
 
-            } else if (response.status === 302) {
-                writeError(logerror, "green", 'You are already logged in, redirect to home page in 2s...', 2000);
-                setTimeout(async () => {
-                    document.documentElement.innerHTML = await response.text()
-                }, 2000);
             } else if (response.status === 400) {
                 writeError(logerror, "red", 'Error: verify your data and try again!', 1500);
             } else if (response.status === 404) {
@@ -462,7 +457,6 @@ function selectCat(e) {
     removeBtn.addEventListener('click', () => {
         span.remove();
         input.remove();
-        // Re-enable the corresponding option in the select
         Array.from(e.target.options).find(option => {
             try {
                 const optionValue = JSON.parse(option.value);
@@ -475,14 +469,12 @@ function selectCat(e) {
 
     span.appendChild(removeBtn);
 
-    // create hidden input to hold the id of selected category
     const input = document.createElement('input')
     input.type = 'hidden';
     input.value = id
     input.name = 'categories'
 
-    // add the elements (span and hidden input) 
-    // at the first position of the categories container
+   
     const categoriesContainer = document.querySelector('.selected-categories');
     categoriesContainer.append(input, span);
 

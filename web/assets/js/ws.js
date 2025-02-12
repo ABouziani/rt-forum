@@ -1,8 +1,15 @@
+
 var pagee = 0;
 var worker = new SharedWorker('/assets/js/worker.js');
 worker.port.start();
 
 worker.port.onmessage = (event) => {
+    
+    if (event.data == 'logout' || event.data == 'login') {
+        refetchLogin('/login')
+        return
+    }
+
     let data;
     try {
         data = JSON.parse(event.data);
@@ -115,8 +122,10 @@ function addMsg(data) {
         const chatMessages = document.getElementById("chatMessages");
         const messageElement = document.createElement("div");
         if (data.receiver == receiver) {
+            pagee++
             messageElement.className = "message sent";
         } else if (data.Sender == receiver) {
+            pagee++
             messageElement.className = "message received";
         } else {
             alert(`${data.Sender} sent you a message`)
@@ -147,7 +156,7 @@ function sendMessage(uname) {
         alert('Check your message and retry!')
         return
     }
-
+    
     worker.port.postMessage(JSON.stringify({
         Receiver: uname,
         Msg: message,

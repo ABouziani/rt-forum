@@ -17,7 +17,6 @@ import (
 
 func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	_, username, valid := models.ValidSession(r, db)
-
 	if !valid {
 		w.WriteHeader(401)
 		return
@@ -34,7 +33,8 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	models.Clients[username] = ws
 	models.Mu.Unlock()
 	err = Broadcast(db)
-	if err != nil{
+
+	if err != nil {
 		utils.RenderError(db, w, r, http.StatusInternalServerError, valid, username)
 	}
 
@@ -46,9 +46,9 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			delete(models.Clients, username)
 			models.Mu.Unlock()
 			err = Broadcast(db)
-			if err != nil{
+			if err != nil {
 				utils.RenderError(db, w, r, http.StatusInternalServerError, valid, username)
-			}			
+			}
 			return
 		}
 		if strings.TrimSpace(receivedMsg.Msg) == "" || len(strings.TrimSpace(receivedMsg.Msg)) > 100 {
@@ -64,9 +64,9 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			delete(models.Clients, username)
 			models.Mu.Unlock()
 			err = Broadcast(db)
-			if err != nil{
+			if err != nil {
 				utils.RenderError(db, w, r, http.StatusInternalServerError, valid, username)
-			}			
+			}
 			utils.RenderError(db, w, r, http.StatusInternalServerError, valid, username)
 			return
 		}
@@ -77,13 +77,13 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			delete(models.Clients, username)
 			models.Mu.Unlock()
 			err = Broadcast(db)
-			if err != nil{
+			if err != nil {
 				utils.RenderError(db, w, r, http.StatusInternalServerError, valid, username)
-			}			
+			}
 			return
 		}
 		err = Broadcast(db)
-		if err != nil{
+		if err != nil {
 			utils.RenderError(db, w, r, http.StatusInternalServerError, valid, username)
 		}
 	}

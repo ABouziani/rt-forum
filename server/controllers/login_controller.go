@@ -15,7 +15,6 @@ import (
 )
 
 func GetLoginPage(w http.ResponseWriter, r *http.Request, db *sql.DB) {
-	
 	if r.Method != http.MethodGet {
 		utils.RenderError(db, w, r, http.StatusMethodNotAllowed, false, "")
 		return
@@ -46,7 +45,7 @@ func Signin(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	var valid bool
 	if _, _, valid = models.ValidSession(r, db); valid {
-		w.WriteHeader(302)
+		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
 

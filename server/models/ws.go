@@ -79,6 +79,7 @@ func StoreMsg(db *sql.DB, sender, receiver, msg string) error {
 }
 
 func FetchdbMessages(db *sql.DB, sender, receiver string, page float64) ([]Message, error) {
+
 	rows, er := db.Query("SELECT sender,receiver,msg,created_at FROM messages WHERE (sender = ? AND receiver = ?) OR (receiver = ? AND sender = ?) ORDER BY created_at DESC LIMIT 10 OFFSET ?;", sender, receiver, sender, receiver, page)
 	if er != nil {
 		return nil,er
