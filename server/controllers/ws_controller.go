@@ -54,12 +54,16 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			}
 			return
 		}
+		receivedMsg.Sender = username
+		if (receivedMsg.Type=="typpin"){
+			err= SendMessage(receivedMsg.Sender, receivedMsg.Receiver, receivedMsg)
+			fmt.Println(err)
+			continue
+		}
 		if strings.TrimSpace(receivedMsg.Msg) == "" || len(strings.TrimSpace(receivedMsg.Msg)) > 100 {
 			log.Println("Invalid message")
 			continue
 		}
-
-		receivedMsg.Sender = username
 
 		err = models.StoreMsg(db, receivedMsg.Sender, receivedMsg.Receiver, receivedMsg.Msg)
 		if err != nil {
@@ -129,17 +133,19 @@ func SendMessage(sender, receiver string, data models.Message) error {
 	if !exist {
 		return fmt.Errorf("not exist")
 	}
-	if !exist2 {
+	if !exist2{
 		err = models.Clients[sender].WriteJSON(data)
 		if err != nil {
 			return err
 		}
 		return nil
 	}
-	err = models.Clients[sender].WriteJSON(data)
-	if err != nil {
-		return err
-	}
+	if  data.Type != "typpin"{
+		err = models.Clients[sender].WriteJSON(data)
+		if err != nil {
+			return err
+		}
+	} 
 	err = models.Clients[receiver].WriteJSON(data)
 	if err != nil {
 		return err

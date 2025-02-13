@@ -17,6 +17,7 @@ type Message struct {
 	Receiver   string `json:"receiver"`
 	Msg        string `json:"msg"`
 	Created_at string `json:"created_at"`
+	Type string `json:"type"`
 }
 
 type OnlineUsers struct {

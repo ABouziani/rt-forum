@@ -36,11 +36,9 @@ onconnect = (event) => {
             return
         }
 
-
         if (ws && ws.readyState === WebSocket.OPEN) {
             ws.send(msgEvent.data);
         }
-
 
     };
 

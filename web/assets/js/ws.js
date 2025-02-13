@@ -4,7 +4,8 @@ var worker = new SharedWorker('/assets/js/worker.js');
 worker.port.start();
 
 worker.port.onmessage = (event) => {
-    if (event.data == 'bad request!'){
+
+    if (event.data == 'bad request!') {
         alert('bad request!')
         return
     }
@@ -23,7 +24,7 @@ worker.port.onmessage = (event) => {
 
     let chatdiv = document.getElementById('chat-section');
     let chatdivmobile = document.getElementById('chat-mobile');
-    if (chatdiv && !data.msg && chatdivmobile) {
+    if (chatdiv && !data.msg && chatdivmobile && !data.type) {
         chatdiv.innerText = "";
         chatdivmobile.innerText = "";
         if (data.Users) {
@@ -45,7 +46,8 @@ worker.port.onmessage = (event) => {
                 });
             }
         }
-    } else if (data.msg) {
+    } else if (data.msg || data.type) {
+
         addMsg(data);
     }
 };
@@ -60,7 +62,9 @@ function getChatBox(receiver, s) {
             </button>
         <p style="margin:auto;" class="currentPage">Conversation</p>
             <div class="chat-container">
-            <div style="padding-left:20px;padding-bottom:20px;"><span class="fa-regular fa-user"></span><span id="receiver" style="margin-left:10px;">${receiver}</span></div>
+            <div style="padding-left:20px;padding-bottom:20px;"><span class="fa-regular fa-user"></span><span id="receiver" style="margin-left:10px;">${receiver}</span>
+                <div id="typping" style="color: green; display: none;">typping in progress....</div>
+            </div>
             <div onscroll="handleScroll('${receiver}','${pagee}')" class="chat-messages" id="chatMessages">
             
             </div>
@@ -70,6 +74,15 @@ function getChatBox(receiver, s) {
             </div>
           </div>
             `
+        let sendinput = document.getElementById('chatInput')
+        if (sendinput) {
+            sendinput.addEventListener('input', () => {
+                worker.port.postMessage(JSON.stringify({
+                    Receiver: receiver,
+                    Type: "typpin",
+                }))
+            })
+        }
     }
     fetch("/fetchmessages", {
         method: "POST",
@@ -117,6 +130,7 @@ function getChatBox(receiver, s) {
 
 
 function addMsg(data) {
+
     if (document.querySelector('#receiver')) {
 
         let receiver = document.querySelector('#receiver').innerText
@@ -124,12 +138,22 @@ function addMsg(data) {
         const chatInput = document.getElementById("chatInput");
         const chatMessages = document.getElementById("chatMessages");
         const messageElement = document.createElement("div");
-        if (data.receiver == receiver) {
+        if (data.receiver == receiver && !data.type) {
             pagee++
             messageElement.className = "message sent";
+            chatInput.value = "";
+
         } else if (data.Sender == receiver) {
+            if (data.type == 'typpin') {
+                if (chatInput) {
+                    document.getElementById("typping").style.display = "block"
+                    return
+                }
+            }
             pagee++
             messageElement.className = "message received";
+            document.getElementById("typping").style.display = "none"
+
         } else {
             alert(`${data.Sender} sent you a message`)
             return
@@ -144,10 +168,8 @@ function addMsg(data) {
     </div>
         `
         chatMessages.appendChild(messageElement);
-
-        chatInput.value = "";
         chatMessages.scrollTop = chatMessages.scrollHeight;
-    }else if (data.Sender){
+    } else if (data.Sender) {
         alert(`${data.Sender} sent you a message`)
     }
 }
@@ -155,11 +177,11 @@ function addMsg(data) {
 function sendMessage(uname) {
     let message = document.querySelector('#chatInput').value
 
-    if (message == "" || message.length > 100){
+    if (message == "" || message.length > 100) {
         alert('Check your message and retry!')
         return
     }
-    
+
     worker.port.postMessage(JSON.stringify({
         Receiver: uname,
         Msg: message,
@@ -200,12 +222,12 @@ function throttle(fn, delay) {
 }
 
 const trchatbox = debounce(getChatBox, 2000)
-const trsendMessage = throttle(sendMessage,1000)
+const trsendMessage = throttle(sendMessage, 1000)
 
 async function refetchLogin(request) {
-    fetch(request,{
-        headers : {
-            'request':'refetch',
+    fetch(request, {
+        headers: {
+            'request': 'refetch',
         },
     }).then(resp => resp.text())
         .then(html => {
