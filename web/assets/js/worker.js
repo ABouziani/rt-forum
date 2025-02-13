@@ -12,10 +12,6 @@ function connectWebSocket() {
 
     };
 
-    ws.onerror = (error) => {
-        console.error("WebSocket error:", error);
-    };
-
     ws.onclose = () => {
         setTimeout(connectWebSocket, 1000);
     };

@@ -33,7 +33,6 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	models.Clients[username] = ws
 	models.Mu.Unlock()
 	err = Broadcast(db)
-
 	if err != nil {
 		utils.RenderError(db, w, r, http.StatusInternalServerError, valid, username)
 	}
@@ -41,6 +40,10 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	for {
 		var receivedMsg models.Message
 		err = ws.ReadJSON(&receivedMsg)
+		if !checkUser(db, receivedMsg.Receiver) && receivedMsg.Receiver != "" {
+			ws.WriteMessage(1, []byte("bad request!"))
+			continue
+		}
 		if err != nil {
 			models.Mu.Lock()
 			delete(models.Clients, username)
@@ -170,4 +173,11 @@ func FetchMessages(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(msghistory)
+}
+
+func checkUser(db *sql.DB, username string) bool {
+	var exists bool
+	query := "SELECT EXISTS(SELECT id FROM users WHERE username = ?)"
+	db.QueryRow(query, username).Scan(&exists)
+	return exists
 }

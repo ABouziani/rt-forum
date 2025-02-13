@@ -4,7 +4,10 @@ var worker = new SharedWorker('/assets/js/worker.js');
 worker.port.start();
 
 worker.port.onmessage = (event) => {
-    
+    if (event.data == 'bad request!'){
+        alert('bad request!')
+        return
+    }
     if (event.data == 'logout' || event.data == 'login') {
         refetchLogin('/login')
         return
