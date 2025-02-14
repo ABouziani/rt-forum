@@ -47,7 +47,6 @@ worker.port.onmessage = (event) => {
             }
         }
     } else if (data.msg || data.type) {
-
         addMsg(data);
     }
 };
@@ -76,11 +75,21 @@ function getChatBox(receiver, s) {
             `
         let sendinput = document.getElementById('chatInput')
         if (sendinput) {
-            sendinput.addEventListener('input', () => {
+            let idoftyppin
+            sendinput.addEventListener('keydown', () => {
                 worker.port.postMessage(JSON.stringify({
                     Receiver: receiver,
                     Type: "typpin",
                 }))
+                clearTimeout(idoftyppin)
+                idoftyppin = setTimeout(()=>{
+                    worker.port.postMessage(JSON.stringify(
+                        {
+                            Receiver: receiver,
+                            Type: "stoptypping",
+                        }
+                    ))
+                },2000)
             })
         }
     }
@@ -139,14 +148,21 @@ function addMsg(data) {
         const chatMessages = document.getElementById("chatMessages");
         const messageElement = document.createElement("div");
         if (data.receiver == receiver && !data.type) {
+
             pagee++
             messageElement.className = "message sent";
             chatInput.value = "";
 
         } else if (data.Sender == receiver) {
+
             if (data.type == 'typpin') {
                 if (chatInput) {
                     document.getElementById("typping").style.display = "block"
+                    return
+                }
+            }else if (data.type=='stoptypping'){
+                if (chatInput) {
+                    document.getElementById("typping").style.display = "none"
                     return
                 }
             }
@@ -154,10 +170,13 @@ function addMsg(data) {
             messageElement.className = "message received";
             document.getElementById("typping").style.display = "none"
 
-        } else {
+        } else if (!data.type) {
             alert(`${data.Sender} sent you a message`)
             return
+        } else {
+            return
         }
+
         messageElement.innerHTML = `
         <div class="header">
         <span style="margin-right:20px;color:black;font-weight: 700;" class="username">${data.Sender}</span>
@@ -169,7 +188,7 @@ function addMsg(data) {
         `
         chatMessages.appendChild(messageElement);
         chatMessages.scrollTop = chatMessages.scrollHeight;
-    } else if (data.Sender) {
+    } else if (data.Sender && !data.type) {
         alert(`${data.Sender} sent you a message`)
     }
 }

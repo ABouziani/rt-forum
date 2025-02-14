@@ -25,8 +25,7 @@ onconnect = (event) => {
             ports.forEach(port => {
                 port.postMessage('login');
             })
-            // connectWebSocket();
-            // return
+           
         }
         if (msgEvent.data == 'kill') {
             ws.close()

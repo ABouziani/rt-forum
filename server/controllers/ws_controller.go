@@ -34,7 +34,7 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	models.Mu.Unlock()
 	err = Broadcast(db)
 	if err != nil {
-		utils.RenderError(db, w, r, http.StatusInternalServerError, valid, username)
+		return
 	}
 
 	for {
@@ -45,19 +45,16 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			continue
 		}
 		if err != nil {
-			models.Mu.Lock()
-			delete(models.Clients, username)
-			models.Mu.Unlock()
-			err = Broadcast(db)
-			if err != nil {
-				utils.RenderError(db, w, r, http.StatusInternalServerError, valid, username)
-			}
-			return
+			handleDisconnect(username, db, valid, w, r)
+			break
 		}
 		receivedMsg.Sender = username
-		if (receivedMsg.Type=="typpin"){
-			err= SendMessage(receivedMsg.Sender, receivedMsg.Receiver, receivedMsg)
-			fmt.Println(err)
+		if receivedMsg.Type == "typpin" || receivedMsg.Type == "stoptypping" {
+			err = SendMessage(receivedMsg.Sender, receivedMsg.Receiver, receivedMsg)
+			if err != nil {
+				handleDisconnect(username, db, valid, w, r)
+				break
+			}
 			continue
 		}
 		if strings.TrimSpace(receivedMsg.Msg) == "" || len(strings.TrimSpace(receivedMsg.Msg)) > 100 {
@@ -67,31 +64,18 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 		err = models.StoreMsg(db, receivedMsg.Sender, receivedMsg.Receiver, receivedMsg.Msg)
 		if err != nil {
-			models.Mu.Lock()
-			delete(models.Clients, username)
-			models.Mu.Unlock()
-			err = Broadcast(db)
-			if err != nil {
-				utils.RenderError(db, w, r, http.StatusInternalServerError, valid, username)
-			}
-			utils.RenderError(db, w, r, http.StatusInternalServerError, valid, username)
-			return
+			handleDisconnect(username,db,valid,w,r)
+			break
 		}
 		receivedMsg.Created_at = time.Now().Format("02-01-06 15:04:05")
 		err = SendMessage(receivedMsg.Sender, receivedMsg.Receiver, receivedMsg)
 		if err != nil {
-			models.Mu.Lock()
-			delete(models.Clients, username)
-			models.Mu.Unlock()
-			err = Broadcast(db)
-			if err != nil {
-				utils.RenderError(db, w, r, http.StatusInternalServerError, valid, username)
-			}
-			return
+			handleDisconnect(username,db,valid,w,r)
+			break
 		}
 		err = Broadcast(db)
 		if err != nil {
-			utils.RenderError(db, w, r, http.StatusInternalServerError, valid, username)
+			break
 		}
 	}
 }
@@ -133,19 +117,19 @@ func SendMessage(sender, receiver string, data models.Message) error {
 	if !exist {
 		return fmt.Errorf("not exist")
 	}
-	if !exist2{
+	if !exist2 {
 		err = models.Clients[sender].WriteJSON(data)
 		if err != nil {
 			return err
 		}
 		return nil
 	}
-	if  data.Type != "typpin"{
+	if data.Type != "typpin" && data.Type != "stoptypping" {
 		err = models.Clients[sender].WriteJSON(data)
 		if err != nil {
 			return err
 		}
-	} 
+	}
 	err = models.Clients[receiver].WriteJSON(data)
 	if err != nil {
 		return err
@@ -186,4 +170,11 @@ func checkUser(db *sql.DB, username string) bool {
 	query := "SELECT EXISTS(SELECT id FROM users WHERE username = ?)"
 	db.QueryRow(query, username).Scan(&exists)
 	return exists
+}
+
+func handleDisconnect(username string, db *sql.DB, valid bool, w http.ResponseWriter, r *http.Request) {
+	models.Mu.Lock()
+	delete(models.Clients, username)
+	models.Mu.Unlock()
+	Broadcast(db)
 }
