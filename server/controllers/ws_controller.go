@@ -45,14 +45,14 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 			continue
 		}
 		if err != nil {
-			handleDisconnect(username, db, valid, w, r)
+			handleDisconnect(username, db)
 			break
 		}
 		receivedMsg.Sender = username
 		if receivedMsg.Type == "typpin" || receivedMsg.Type == "stoptypping" {
 			err = SendMessage(receivedMsg.Sender, receivedMsg.Receiver, receivedMsg)
 			if err != nil {
-				handleDisconnect(username, db, valid, w, r)
+				handleDisconnect(username, db)
 				break
 			}
 			continue
@@ -64,13 +64,13 @@ func HandleWS(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 		err = models.StoreMsg(db, receivedMsg.Sender, receivedMsg.Receiver, receivedMsg.Msg)
 		if err != nil {
-			handleDisconnect(username,db,valid,w,r)
+			handleDisconnect(username,db)
 			break
 		}
 		receivedMsg.Created_at = time.Now().Format("02-01-06 15:04:05")
 		err = SendMessage(receivedMsg.Sender, receivedMsg.Receiver, receivedMsg)
 		if err != nil {
-			handleDisconnect(username,db,valid,w,r)
+			handleDisconnect(username,db)
 			break
 		}
 		err = Broadcast(db)
@@ -172,7 +172,7 @@ func checkUser(db *sql.DB, username string) bool {
 	return exists
 }
 
-func handleDisconnect(username string, db *sql.DB, valid bool, w http.ResponseWriter, r *http.Request) {
+func handleDisconnect(username string, db *sql.DB) {
 	models.Mu.Lock()
 	delete(models.Clients, username)
 	models.Mu.Unlock()
